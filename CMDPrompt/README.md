@@ -1,2 +1,2 @@
-# Screenshot of the CMD Prompt made with HTML/CSS
+# Screenshot of the Module
 ![CMD Prompt](https://github.com/stevenholtman/Images/blob/main/cmdprompt.png?raw=true)
