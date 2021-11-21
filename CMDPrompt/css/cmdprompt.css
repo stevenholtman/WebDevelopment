@@ -1,0 +1,95 @@
+/* Command Prompt */
+
+.cmdprmt {
+    font-family: 'Fira Mono';
+    width: 500px;
+    height: 300px;
+    box-sizing: border-box;
+    margin: auto;
+    position: relative;
+    justify-self: flex-end;
+}
+
+.cmdprmt header {
+    background-color: #DDD;
+    height: 30px;
+    line-height: 30px;
+    text-align: left;
+    color: #000;
+    text-indent: 10px;
+    width: 100%;
+}
+
+.cmdprmt .cmdbody {
+    box-sizing: border-box;
+    padding: 20px;
+    height: calc(100% - 60px);
+    overflow: scroll;
+    background-color: #000;
+    color: #DDD;
+}
+
+.cmdprmt .cmdbody p {
+    line-height: 1rem;
+}
+
+.cmdprmt .cmdblinking {
+    animation: blinkingCMD 1.2s infinite;
+}
+
+.cmdprmt .mini {
+    color: #fff;
+    background-color: black;
+    padding: 1.5px 3px 0 3px;
+    border-top: 4px #808080 solid;
+    border-left: 2px #808080 solid;
+    border-right: 2px #808080 solid;
+    border-bottom: 2px #808080 solid;
+    font-size: 10px;
+}
+
+.cmdprmt .right {
+    float: right;
+}
+
+.cmdprmt .buttons {
+    font-family: 'Courier New', Courier, monospace;
+    float: left;
+    font-size: 20px;
+    padding-right: 20px;
+    padding-left: 10px;
+}
+
+.cmdprmt .buttons:hover {
+    background-color: darkgray;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.cmdprmt .buttons:hover:last-child {
+    background-color: rgb(223, 54, 54);
+}
+
+@keyframes blinkingCMD {
+    0% {
+        color: #DDD;
+    }
+
+    49% {
+        color: #DDD;
+    }
+
+    60% {
+        color: transparent;
+    }
+
+    99% {
+        color: transparent;
+    }
+
+    100% {
+        color: #DDD;
+    }
+}

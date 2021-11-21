@@ -1,0 +1,97 @@
+/* Powershell */
+
+.powershell {
+    font-family: 'Fira Mono';
+    font-size: small;
+    width: 500px;
+    height: 300px;
+    box-sizing: border-box;
+    margin: auto;
+    position: relative;
+    justify-self: flex-end;
+}
+
+.powershell header {
+    background-color: #DDD;
+    height: 30px;
+    line-height: 30px;
+    text-align: left;
+    color: #000;
+    text-indent: 10px;
+    width: 100%;
+}
+
+.powershell .powershellbody {
+    box-sizing: border-box;
+    height: calc(100% - 60px);
+    overflow: scroll;
+    background-color: #012456;
+    color: #DDD;
+}
+
+.powershell .powershellbody p {
+    line-height: 1rem;
+}
+
+.powershell .powershellblinking {
+    animation: blinkingpowershell 1.2s infinite;
+}
+
+.powershell .mini {
+    color: #fff;
+    font-weight: bold;
+    padding: 0px 3px 0px 3px;
+    border-radius: 1px;
+    font-size: 13px;
+    background: linear-gradient(135deg, #589dfd, #006aff);
+}
+
+.powershell .right {
+    float: right;
+}
+
+.powershell .buttons {
+    font-family: 'Courier New', Courier, monospace;
+    float: left;
+    font-size: 20px;
+    padding-right: 20px;
+    padding-left: 10px;
+}
+
+.powershell .buttons:hover {
+    background-color: darkgray;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.powershell .variable {
+    color: yellow;
+}
+
+.powershell .buttons:hover:last-child {
+    background-color: rgb(223, 54, 54);
+}
+
+@keyframes blinkingpowershell {
+    0% {
+        color: #DDD;
+    }
+
+    49% {
+        color: #DDD;
+    }
+
+    60% {
+        color: transparent;
+    }
+
+    99% {
+        color: transparent;
+    }
+
+    100% {
+        color: #DDD;
+    }
+}
