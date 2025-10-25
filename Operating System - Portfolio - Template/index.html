@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Portfolio website - Update profile.js with your information">
+    <title>Portfolio</title>
+    <script src="profile.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Additional inline styles if needed */
+
+    </style>
+</head>
+
+<body>
+    <div class="gradient-bg" id="gradientBg"></div>
+
+    <!-- MOBILE LAYOUT -->
+    <div class="mobile-layout">
+        <div class="mobile-header">
+            <div class="mobile-profile-pic">
+                <img src="images/profile.jpeg" id="mobileProfileImg" alt="" onerror="this.style.display='none'">
+            </div>
+            <h1 id="mobileProfileName">Portfolio</h1>
+            <h2 id="mobileProfileTitle">Professional</h2>
+            <div class="mobile-contact-links">
+                <a href="" id="mobilePhoneLink" class="mobile-contact-link">📱 Call</a>
+                <a href="" id="mobileEmailLink" class="mobile-contact-link">📧 Email</a>
+                <a href="" id="mobileGithubLink" target="_blank" class="mobile-contact-link">💻 GitHub</a>
+            </div>
+        </div>
+
+        <div class="mobile-nav">
+            <div class="mobile-nav-items">
+                <a href="#mobile-about" class="mobile-nav-item active">About</a>
+                <a href="#mobile-experience" class="mobile-nav-item">Experience</a>
+                <a href="#mobile-skills" class="mobile-nav-item">Skills</a>
+                <a href="#mobile-projects" class="mobile-nav-item">Projects</a>
+                <a href="#mobile-interests" class="mobile-nav-item">Interests</a>
+                <a href="#mobile-contact" class="mobile-nav-item">Contact</a>
+            </div>
+        </div>
+
+        <div id="mobile-about" class="mobile-section">
+            <h3>About Me</h3>
+            <div class="mobile-card">
+                <p id="mobileMissionStatement" style="font-style: italic; color: #667eea; margin-bottom: 15px;">Professional statement here</p>
+                <p><strong>Email:</strong> <span id="mobileAboutEmail">email@example.com</span></p>
+                <p><strong>Phone:</strong> <span id="mobileAboutPhone">(555) 555-5555</span></p>
+            </div>
+        </div>
+
+        <div id="mobile-interests" class="mobile-section" style="background: #f9f9f9;">
+            <!-- Generated dynamically from PROFILE.about -->
+        </div>
+
+        <div id="mobile-experience" class="mobile-section" style="background: #f9f9f9;">
+            <!-- Generated dynamically from PROFILE.resume.experience -->
+        </div>
+
+        <div id="mobile-skills" class="mobile-section">
+            <h3>Technical Skills</h3>
+            <div class="mobile-skills">
+                <!-- Generated dynamically from PROFILE.resume.skills -->
+            </div>
+        </div>
+
+        <div id="mobile-projects" class="mobile-section" style="background: #f9f9f9;">
+            <!-- Generated dynamically from PROFILE.projects -->
+        </div>
+
+        <div id="mobile-contact" class="mobile-section">
+            <!-- Generated dynamically from PROFILE contact info -->
+        </div>
+
+        <div class="mobile-footer">
+            <p id="copyrightText">© 2025 Portfolio</p>
+            <p>Portfolio v2.0</p>
+        </div>
+    </div>
+
+    <!-- DESKTOP LAYOUT -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-container">
+            <div class="login-profile-pic">
+                <img id="loginProfileImg" src="images/profile.jpeg" alt="" onerror="this.style.display='none'">
+            </div>
+            <h1 class="login-name" id="loginName">Portfolio</h1>
+            <p class="login-subtitle" id="loginSubtitle">Professional Portfolio</p>
+            <button class="login-button" onclick="handleLogin()">Sign In</button>
+        </div>
+        <div class="login-footer">
+            <div class="login-time" id="loginTime">12:00 PM</div>
+            <div class="login-date" id="loginDate">Monday, October 18</div>
+        </div>
+    </div>
+
+    <div class="taskbar" id="taskbar" style="display: none;">
+        <button class="taskbar-start" onclick="app.toggleStartMenu()">≡</button>
+        <div class="taskbar-search-container">
+            <input type="text" class="taskbar-search-input" id="taskbarSearch" placeholder="🔍 Search apps & content...">
+            <div class="search-results" id="searchResults"></div>
+        </div>
+        <div class="taskbar-apps" id="taskbarApps"></div>
+        <div class="taskbar-system">
+            <div class="taskbar-system-widget" id="systemTrayToggle">
+                <div class="taskbar-weather" id="taskbarWeather">
+                    <div class="taskbar-weather-main">
+                        <span class="taskbar-weather-icon">🌡️</span>
+                        <span class="taskbar-weather-temp">--°</span>
+                    </div>
+                    <div class="taskbar-weather-location">Loading...</div>
+                </div>
+                <div class="taskbar-divider"></div>
+                <div class="taskbar-time-date">
+                    <div class="taskbar-time" id="systemTime">12:00 PM</div>
+                    <div class="taskbar-date" id="systemDate">Mon, Oct 18</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="desktop" id="desktop" style="display: none;">
+        <div class="desktop-icon" onclick="app.openWindow('profile')">
+            <div
+                style="width: 48px; height: 48px; background: rgba(255,255,255,0.9); border-radius: 8px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                👤</div>
+            <span>My Profile</span>
+        </div>
+        <div class="desktop-icon" onclick="app.openWindow('resume')">
+            <div
+                style="width: 48px; height: 48px; background: rgba(255,255,255,0.9); border-radius: 8px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                📄</div>
+            <span>Resume</span>
+        </div>
+        <div class="desktop-icon" onclick="app.openWindow('projects')">
+            <div
+                style="width: 48px; height: 48px; background: rgba(255,255,255,0.9); border-radius: 8px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                💻</div>
+            <span>Projects</span>
+        </div>
+        <div class="desktop-icon" onclick="app.openWindow('contact')">
+            <div
+                style="width: 48px; height: 48px; background: rgba(255,255,255,0.9); border-radius: 8px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                📧</div>
+            <span>Contact</span>
+        </div>
+        <div class="desktop-icon" onclick="app.openWindow('tools')">
+            <div
+                style="width: 48px; height: 48px; background: rgba(255,255,255,0.9); border-radius: 8px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                🛠️</div>
+            <span>Tools</span>
+        </div>
+        <div class="desktop-icon" onclick="app.openWindow('settings')">
+            <div
+                style="width: 48px; height: 48px; background: rgba(255,255,255,0.9); border-radius: 8px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                ⚙️</div>
+            <span>Settings</span>
+        </div>
+    </div>
+
+    <div class="start-menu" id="startMenu">
+        <div class="start-menu-header">
+            <div class="start-menu-profile-pic">
+                <img id="startMenuProfileImg" src="images/profile.jpeg" alt="" onerror="this.style.display='none'">
+            </div>
+            <div class="start-menu-profile-info">
+                <h3 id="startMenuName">Portfolio</h3>
+                <p id="startMenuTitle">Professional</p>
+            </div>
+        </div>
+        <div class="start-menu-apps">
+            <div class="start-menu-category">Portfolio</div>
+            <div class="start-menu-item" onclick="app.openWindow('profile'); app.toggleStartMenu();">
+                <div class="start-menu-item-icon">👤</div>
+                <div class="start-menu-item-content">
+                    <div class="start-menu-item-title">My Profile</div>
+                    <div class="start-menu-item-desc">View bio and experience</div>
+                </div>
+            </div>
+            <div class="start-menu-item" onclick="app.openWindow('resume'); app.toggleStartMenu();">
+                <div class="start-menu-item-icon">📄</div>
+                <div class="start-menu-item-content">
+                    <div class="start-menu-item-title">Resume</div>
+                    <div class="start-menu-item-desc">Professional experience & skills</div>
+                </div>
+            </div>
+            <div class="start-menu-item" onclick="app.openWindow('projects'); app.toggleStartMenu();">
+                <div class="start-menu-item-icon">💻</div>
+                <div class="start-menu-item-content">
+                    <div class="start-menu-item-title">Projects</div>
+                    <div class="start-menu-item-desc">GitHub repositories & code</div>
+                </div>
+            </div>
+            
+            <div class="start-menu-category">Tools</div>
+            <div class="start-menu-item" onclick="app.openWindow('terminal'); app.toggleStartMenu();">
+                <div class="start-menu-item-icon" style="background: #0c0c0c; color: #0dbc79;">$_</div>
+                <div class="start-menu-item-content">
+                    <div class="start-menu-item-title">Terminal</div>
+                    <div class="start-menu-item-desc">Command line interface</div>
+                </div>
+            </div>
+            <div class="start-menu-item" onclick="app.openWindow('calculator'); app.toggleStartMenu();">
+                <div class="start-menu-item-icon">🔢</div>
+                <div class="start-menu-item-content">
+                    <div class="start-menu-item-title">Calculator</div>
+                    <div class="start-menu-item-desc">Basic math calculations</div>
+                </div>
+            </div>
+            <div class="start-menu-item" onclick="app.openWindow('passwordgen'); app.toggleStartMenu();">
+                <div class="start-menu-item-icon">🔐</div>
+                <div class="start-menu-item-content">
+                    <div class="start-menu-item-title">Password Generator</div>
+                    <div class="start-menu-item-desc">Secure password & passphrase creation</div>
+                </div>
+            </div>
+            <div class="start-menu-item" onclick="app.openWindow('todolist'); app.toggleStartMenu();">
+                <div class="start-menu-item-icon">✅</div>
+                <div class="start-menu-item-content">
+                    <div class="start-menu-item-title">To-Do List</div>
+                    <div class="start-menu-item-desc">Task management</div>
+                </div>
+            </div>
+            <div class="start-menu-category">Connect</div>
+            <div class="start-menu-item" onclick="app.openWindow('contact'); app.toggleStartMenu();">
+                <div class="start-menu-item-icon">📧</div>
+                <div class="start-menu-item-content">
+                    <div class="start-menu-item-title">Contact</div>
+                    <div class="start-menu-item-desc">Get in touch with me</div>
+                </div>
+            </div>
+        </div>
+        <div class="start-menu-footer">
+            <button class="start-menu-footer-btn" onclick="app.openWindow('settings'); app.toggleStartMenu();">
+                <span>⚙️</span>
+                <span>Settings</span>
+            </button>
+            <button class="start-menu-footer-btn" onclick="location.reload();">
+                <span>🔄</span>
+                <span>Restart</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="windowsContainer"></div>
+
+    <!-- Calendar/Weather Widget -->
+    <div class="calendar-widget" id="calendarWidget">
+        <div class="calendar-header">
+            <div class="calendar-time" id="widgetTime">12:00 PM</div>
+            <div class="calendar-date" id="widgetDate">Monday, October 18, 2024</div>
+        </div>
+        <div class="calendar-content">
+            <div id="weatherContent">
+                <div class="weather-loading">Loading weather data...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="context-menu" id="contextMenu">
+        <div class="context-menu-item" onclick="contextMenu.refreshDesktop()">
+            <span class="context-menu-icon">🔄</span>
+            <span>Refresh</span>
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" onclick="contextMenu.openWindow('profile')">
+            <span class="context-menu-icon">👤</span>
+            <span>Open My Profile</span>
+        </div>
+        <div class="context-menu-item" onclick="contextMenu.openWindow('resume')">
+            <span class="context-menu-icon">📄</span>
+            <span>Open Resume</span>
+        </div>
+        <div class="context-menu-item" onclick="contextMenu.openWindow('projects')">
+            <span class="context-menu-icon">💻</span>
+            <span>Open Projects</span>
+        </div>
+        <div class="context-menu-item" onclick="contextMenu.openWindow('terminal')">
+            <span class="context-menu-icon">$_</span>
+            <span>Open Terminal</span>
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" onclick="contextMenu.openWindow('settings')">
+            <span class="context-menu-icon">⚙️</span>
+            <span>Settings</span>
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" onclick="contextMenu.about()">
+            <span class="context-menu-icon">ℹ️</span>
+            <span>About This Portfolio</span>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
