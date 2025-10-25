@@ -1249,6 +1249,74 @@
                 const display = content.querySelector('#calcDisplay');
                 let expression = '';
 
+                // Safe expression evaluator (no eval())
+                const safeEvaluate = (expr) => {
+                    // Replace display symbols with operators
+                    expr = expr.replace(/×/g, '*').replace(/−/g, '-');
+
+                    // Validate: only allow digits, operators, decimal points, and parentheses
+                    if (!/^[0-9+\-*/.() ]*$/.test(expr)) {
+                        throw new Error('Invalid characters');
+                    }
+
+                    // Simple recursive descent parser
+                    let pos = 0;
+
+                    const parseExpression = () => {
+                        let result = parseTerm();
+                        while (pos < expr.length && (expr[pos] === '+' || expr[pos] === '-')) {
+                            const op = expr[pos++];
+                            const right = parseTerm();
+                            result = op === '+' ? result + right : result - right;
+                        }
+                        return result;
+                    };
+
+                    const parseTerm = () => {
+                        let result = parseFactor();
+                        while (pos < expr.length && (expr[pos] === '*' || expr[pos] === '/')) {
+                            const op = expr[pos++];
+                            const right = parseFactor();
+                            if (op === '/' && right === 0) throw new Error('Division by zero');
+                            result = op === '*' ? result * right : result / right;
+                        }
+                        return result;
+                    };
+
+                    const parseFactor = () => {
+                        // Skip whitespace
+                        while (pos < expr.length && expr[pos] === ' ') pos++;
+
+                        // Handle parentheses
+                        if (expr[pos] === '(') {
+                            pos++;
+                            const result = parseExpression();
+                            if (expr[pos] !== ')') throw new Error('Missing )');
+                            pos++;
+                            return result;
+                        }
+
+                        // Handle negative numbers
+                        if (expr[pos] === '-') {
+                            pos++;
+                            return -parseFactor();
+                        }
+
+                        // Parse number
+                        let num = '';
+                        while (pos < expr.length && /[0-9.]/.test(expr[pos])) {
+                            num += expr[pos++];
+                        }
+
+                        if (num === '') throw new Error('Expected number');
+                        return parseFloat(num);
+                    };
+
+                    const result = parseExpression();
+                    if (pos !== expr.length) throw new Error('Unexpected character');
+                    return result;
+                };
+
                 this.calcAppend = (val) => {
                     if (val === undefined) return;
                     if (val === '.' && expression.includes('.')) return;
@@ -1268,7 +1336,7 @@
 
                 this.calcEquals = () => {
                     try {
-                        const result = eval(expression.replace('×', '*').replace('−', '-'));
+                        const result = safeEvaluate(expression);
                         expression = result.toString();
                         display.textContent = result;
                     } catch (e) {
