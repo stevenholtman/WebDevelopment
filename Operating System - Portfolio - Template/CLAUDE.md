@@ -19,9 +19,10 @@ The application uses a **modular multi-file architecture**:
 
 - **Global `app` object**: Manages window lifecycle, time updates, start menu state, search
 - **`Window` class**: Handles individual window creation, dragging, minimizing, maximizing, and event management
-- **Window types**: profile, resume, projects, contact, settings, tools, terminal, calculator, passwordgen, base64decoder, todolist
+- **Window types**: profile, resume, projects, contact, settings, terminal, calculator, passwordgen, base64decoder, rot13decoder, todolist, notepad, imageviewer, filemanager, applications
 - **"Tools" window**: Desktop icon opens a Tools window displaying all available tools
-- **"Tools" category**: Start menu organization header with individual tool items (Terminal, Calculator, Password Generator, Base64 Decoder, To-Do List)
+- **"Tools" category**: Start menu organization header with individual tool items (Password Generator, Base64 Decoder, ROT13 Decoder, To-Do List, Image Viewer, Notepad)
+- **"Utilities" category**: Start menu organization header with utility items (Terminal, Calculator, File Manager, Settings)
 - **Mobile layout**: Separate responsive layout for mobile devices (auto-enabled at ≤768px)
 
 ### Key Design Patterns
@@ -107,11 +108,16 @@ All customization happens in **`profile.js`**:
 - **Calculator**: Basic arithmetic operations
 - **Password Generator**: Generate secure passwords or passphrases
 - **Base64 Decoder**: Encode/decode Base64 text
+- **ROT13 Decoder**: Encode/decode ROT13 text
 - **To-Do List**: Task management with local storage
+- **Notepad**: Text editor for viewing and editing text files
+- **Image Viewer**: View image files
+- **File Manager**: Browse files and folders
+- **Applications**: View and manage installed applications
 - **Settings**: Theme switcher (Purple, Blue, Green, Dark), opacity control, system info
 - **Resume**: Animated skill bars that fill on window open
-- **Contact form**: Submit contact information (shows alert)
-- **Search**: Taskbar search across apps, skills, projects, and experience
+- **Contact**: Display contact information and social media links
+- **Search**: Taskbar search across apps, skills, projects, experience, and contact info (all 15 apps searchable)
 - **Mobile layout**: Responsive design for mobile devices with touch-friendly layout
 
 ## Hosting

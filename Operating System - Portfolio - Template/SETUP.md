@@ -145,7 +145,7 @@ portfolio/
 - **Fully Customizable**: Edit `profile.js` to change everything
 - **Responsive**: Works on desktop and mobile
 - **Windows-themed UI**: Interactive desktop environment
-- **Built-in Tools**: Terminal, calculator, password generator, todo list
+- **Built-in Tools**: Terminal, calculator, password generator, to-do list, Base64 decoder, ROT13 decoder, image viewer, file manager, and notepad
 - **Animated**: Smooth animations and transitions
 - **Theme Support**: Multiple color themes in settings
 

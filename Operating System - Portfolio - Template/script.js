@@ -126,6 +126,9 @@
                     { title: 'Password Generator', icon: '🔐', type: 'app', windowType: 'passwordgen', description: 'Secure passwords & passphrases' },
                     { title: 'To-Do List', icon: '✅', type: 'app', windowType: 'todolist', description: 'Task management' },
                     { title: 'Base64 Decoder', icon: '🔓', type: 'app', windowType: 'base64decoder', description: 'Decode Base64 encoded text' },
+                    { title: 'ROT13 Decoder', icon: '🔄', type: 'app', windowType: 'rot13decoder', description: 'Encode/decode ROT13 text' },
+                    { title: 'Notepad', icon: '📝', type: 'app', windowType: 'notepad', description: 'View and edit text files' },
+                    { title: 'Image Viewer', icon: '🖼️', type: 'app', windowType: 'imageviewer', description: 'View image files' },
 
                     // Skills
                     { title: 'PowerShell, Batch, Python', icon: '💻', type: 'skill', description: 'Scripting', windowType: 'resume' },

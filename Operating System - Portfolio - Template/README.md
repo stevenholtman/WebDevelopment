@@ -8,7 +8,7 @@ A Windows-themed portfolio website with an interactive desktop interface. Built 
 - **Fully Customizable**: Update `profile.js` with your information
 - **No Build Process**: Just open `index.html` in a browser
 - **Responsive**: Works on desktop and mobile devices
-- **Built-in Tools**: Terminal, calculator, password generator, to-do list
+- **Built-in Tools**: Terminal, calculator, password generator, to-do list, Base64 decoder, ROT13 decoder, image viewer, file manager, and notepad
 - **Animated**: Smooth animations and transitions
 - **Multiple Themes**: Color themes in system settings
 
@@ -79,7 +79,12 @@ portfolio/
 - **Terminal**: Command-line interface with terminal commands
 - **Calculator**: Basic arithmetic operations
 - **Password Generator**: Create strong passwords or passphrases
-- **To-Do List**: Task management
+- **Base64 Decoder**: Encode/decode Base64 text
+- **ROT13 Decoder**: Encode/decode ROT13 text
+- **To-Do List**: Task management with local storage
+- **Notepad**: Text editor for viewing and editing text files
+- **Image Viewer**: View image files
+- **File Manager**: Browse files and folders
 - **Calendar**: Date and time display
 
 ## Deployment
