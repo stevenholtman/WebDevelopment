@@ -2657,7 +2657,7 @@ ${userName}-portfolio
                 document.getElementById('startMenuName').textContent = PROFILE.name;
                 document.getElementById('startMenuTitle').textContent = PROFILE.title;
                 document.getElementById('startMenuProfileImg').src = PROFILE.profileImage;
-                document.getElementById('copyrightText').textContent = `© 2025 ${PROFILE.name}`;
+                document.getElementById('copyrightText').textContent = `© ${new Date().getFullYear()} ${PROFILE.name}`;
 
                 // ========== MOBILE HEADER ==========
                 document.getElementById('mobileProfileImg').src = PROFILE.profileImage;
@@ -2848,6 +2848,40 @@ ${userName}-portfolio
             const date = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
             document.getElementById('loginTime').textContent = time;
             document.getElementById('loginDate').textContent = date;
+
+            // ========== MOBILE NAV ACTIVE STATE TRACKING ==========
+            // Use Intersection Observer to highlight nav items as user scrolls
+            const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
+            const mobileSections = document.querySelectorAll('.mobile-section');
+
+            if (mobileNavItems.length > 0 && mobileSections.length > 0) {
+                const observerOptions = {
+                    root: null,
+                    rootMargin: '-50% 0px -50% 0px',
+                    threshold: 0
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            // Remove active class from all nav items
+                            mobileNavItems.forEach(item => item.classList.remove('active'));
+
+                            // Add active class to corresponding nav item
+                            const sectionId = entry.target.id;
+                            const navItem = document.querySelector(`.mobile-nav-item[href="#${sectionId}"]`);
+                            if (navItem) {
+                                navItem.classList.add('active');
+                            }
+                        }
+                    });
+                }, observerOptions);
+
+                // Observe all mobile sections
+                mobileSections.forEach(section => {
+                    observer.observe(section);
+                });
+            }
 
             // Update calendar time every second for smooth display
             setInterval(() => {
