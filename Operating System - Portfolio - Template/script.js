@@ -1036,8 +1036,10 @@
                                 input.value = '';
                                 this.autocompleteState = null;
                             } else {
-                                // Reset autocomplete state when user types
+                                // Reset autocomplete state and history tracking when user types
                                 this.autocompleteState = null;
+                                this.terminalHistoryIndex = undefined;
+                                this.terminalCurrentInput = '';
                             }
                         });
 
@@ -1045,6 +1047,38 @@
                             if (e.key === 'Tab') {
                                 e.preventDefault();
                                 this.autocompleteTerminal(input);
+                            } else if (e.key === 'ArrowUp') {
+                                e.preventDefault();
+                                if (!this.terminalState.history || this.terminalState.history.length === 0) return;
+
+                                // Initialize history index on first use
+                                if (typeof this.terminalHistoryIndex === 'undefined') {
+                                    this.terminalHistoryIndex = this.terminalState.history.length;
+                                    this.terminalCurrentInput = input.value;
+                                }
+
+                                // Move backward in history
+                                if (this.terminalHistoryIndex > 0) {
+                                    this.terminalHistoryIndex--;
+                                    input.value = this.terminalState.history[this.terminalHistoryIndex];
+                                }
+                            } else if (e.key === 'ArrowDown') {
+                                e.preventDefault();
+                                if (!this.terminalState.history || this.terminalState.history.length === 0) return;
+
+                                if (typeof this.terminalHistoryIndex === 'undefined') {
+                                    this.terminalHistoryIndex = this.terminalState.history.length;
+                                }
+
+                                // Move forward in history
+                                if (this.terminalHistoryIndex < this.terminalState.history.length - 1) {
+                                    this.terminalHistoryIndex++;
+                                    input.value = this.terminalState.history[this.terminalHistoryIndex];
+                                } else if (this.terminalHistoryIndex === this.terminalState.history.length - 1) {
+                                    // Move to the newest (unsaved input)
+                                    this.terminalHistoryIndex = this.terminalState.history.length;
+                                    input.value = this.terminalCurrentInput || '';
+                                }
                             }
                         });
 
