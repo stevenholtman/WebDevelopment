@@ -2,13 +2,17 @@
             zIndex: 1000,
             windows: {},
             dragging: null,
+            globalFileContents: {},
 
             init() {
                 this.updateTime();
                 setInterval(() => this.updateTime(), 60000);
                 document.addEventListener('click', (e) => this.handleClick(e));
                 this.initContextMenu();
-                
+
+                // Initialize global file contents
+                this.initializeFileContents();
+
                 // Load weather data on init
                 calendar.loadWeather();
                 
@@ -65,6 +69,40 @@
                 this.initSearch();
             },
 
+            initializeFileContents() {
+                // Build file contents globally, accessible without needing Terminal to be open
+                const userName = PROFILE.name.split(' ')[0];
+                const userPath = `C:\\Users\\${userName}`;
+
+                this.globalFileContents = {
+                    // Steven folder CTF files
+                    [`${userPath}\\ctf\\hints.txt`]: 'CTF Challenge Started!\nHint: Explore the challenges directory...\nLook for hidden secrets in level1!',
+                    [`${userPath}\\ctf\\CTF_Rules.txt`]: 'CAPTURE THE FLAG - RULES & GUIDELINES\n======================================\n\n1. OBJECTIVE:\n   Find hidden flags scattered throughout the filesystem.\n   Each flag has a unique format: FLAG{...}\n\n2. RULES:\n   - Use the Terminal to navigate the filesystem\n   - The File Manager cannot access the CTF folder directly (Access Denied)\n   - You must use terminal commands like: cd, dir, type, ls\n   - Each level increases in difficulty\n\n3. AVAILABLE COMMANDS:\n   dir        - List directory contents\n   cd <path>  - Change directory\n   type <file>- Display file contents\n   help       - Show available commands\n\n4. LEVEL PROGRESSION:\n   Level 1: Easy - Flag hidden in user\'s ctf folder\n   Level 2: Medium - Flag requires deeper exploration\n   Level 3: Hard - Hidden in system folders\n\n5. HINTS:\n   - Start with: cd C:\\Users\\<YourName>\\ctf\n   - Look in unexpected places\n   - System folders may contain encoded secrets\n\n6. SUCCESS:\n   Find all flags and compile your final answer!\n   Good luck!',
+                    [`${userPath}\\ctf\\challenges\\level1\\README.txt`]: 'Level 1: The Beginning\n\nYou have found the first level of our CTF challenge.\nYour goal: Find the flag hidden in this directory.\n\nTry looking at all files with the type command!',
+                    [`${userPath}\\ctf\\challenges\\level1\\secret.txt`]: 'FLAG{y0u_f0und_the_f1rst_fl4g_ctf_secr3t_easter_egg}',
+                    [`${userPath}\\ctf\\challenges\\level2\\advanced.txt`]: 'Level 2: Advanced Challenge\n\nCongratulations on finding level 1!\nLevel 2 requires deeper exploration...\n\nHint: Not all secrets are where you expect them. Explore the entire filesystem...',
+                    [`${userPath}\\ctf\\challenges\\level2\\flag.txt`]: 'FLAG{y0u_m4st3r_th3_f1l3syst3m_n4v1g4t10n}',
+                    ['C:\\System\\drivers\\network\\puzzle.txt']: 'Level 3: The Puzzle\n\nYou\'ve made it this far! Great job.\nThis level requires you to piece together clues.\n\nRead both puzzle.txt and decoder.txt\nCombine the information to find the flag.\n\nHint: Check the other file in this directory!',
+                    ['C:\\System\\drivers\\network\\decoder.txt']: 'Decoder Key:\n\nROT13 Cipher Implementation:\nA->N, B->O, C->P ... M->Z\nN->A, O->B, P->C ... Z->M\n\nYour Encrypted Flag:\nSYNT{e0g13_q3p0q3e_z4f03e}\n\nDecode this message using ROT13 to find the flag!\nHint: Apply ROT13 to each letter (numbers and symbols stay the same)',
+                    ['C:\\System\\appdata\\local\\cache\\final.txt']: 'Level 4: The Final Challenge\n\nThis is the most advanced level.\nBoth final.txt and master.txt contain pieces of the answer.\n\nYou must combine knowledge from all previous levels.\nThe flag format remains the same: FLAG{...}\n\nUse all the tools available to you:\n- Terminal commands\n- File exploration\n- Pattern recognition',
+                    ['C:\\System\\appdata\\local\\cache\\master.txt']: 'Master Key:\n\nThe final flag requires combining:\n1. Decryption knowledge from Level 3\n2. Filesystem exploration skills\n3. Pattern recognition from all levels\n\nFinal Hint: FLAG{m4st3r_ctf_pl4y3r_c0mpl3t3d}\n\nThis flag proves you\'ve completed all levels!\nCongratulations!',
+                    // System folder files
+                    ['C:\\System\\appdata\\local\\temp\\~temp.cache']: 'RkxBR3t0ZW1wX2NhY2hlX2gxZGRlbl80ZHY0bmNlZV9zM2NyM3RzX3dpdGhpbn0=',
+                    ['C:\\System\\appdata\\local\\cache\\app.cache']: '[AppCache]\nVersion=2.1\nLastUpdate=2025-01-15\nCacheSize=256MB\nCompressionEnabled=true\nAutoClean=false',
+                    ['C:\\System\\settings.ini']: '[System]\nBuildNumber=19045\nKernelVersion=10.0.19045\nBootOption=Normal\nDebugMode=false\nRestorePoints=5',
+                    ['C:\\System\\config.sys']: 'DEVICE=C:\\System\\drivers\\storage\\disk.sys\nDEVICE=C:\\System\\drivers\\network\\ethernet.sys\nFILES=255\nBUFFERS=30,0\nDOS=HIGH,UMB',
+                    ['C:\\System\\drivers\\network\\ethernet.sys']: 'Ethernet Device Driver\nVersion: 4.2.1.0\nManufacturer: Intel Corporation\nDeviceID: PCI\\VEN_8086&DEV_1539\nDriver Status: Active',
+                    ['C:\\System\\drivers\\network\\wifi.sys']: 'Wireless Network Driver\nVersion: 23.1.2.0\nManufacturer: MediaTek\nDeviceID: PCI\\VEN_14C3&DEV_7961\nDriver Status: Active',
+                    ['C:\\System\\drivers\\storage\\disk.sys']: 'Disk Storage Driver\nVersion: 10.0.19045.1\nManufacturer: Microsoft\nSupported: SATA, NVMe, SSD\nDriver Status: Active',
+                    ['C:\\System\\drivers\\storage\\usb.sys']: 'USB Mass Storage Driver\nVersion: 10.0.19045.0\nManufacturer: Microsoft\nUSB Version: 3.1\nDriver Status: Active',
+                    ['C:\\System\\config\\boot.ini']: '[boot loader]\ntimeout=30\ndefault=multi(0)disk(0)rdisk(0)partition(1)\\WINDOWS\n\n[operating systems]\nmulti(0)disk(0)rdisk(0)partition(1)\\WINDOWS="Windows" /fastdetect',
+                    ['C:\\System\\config\\registry.dat']: 'Windows Registry Editor Version 5.00\n\n[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion]\n"CurrentVersion"="10.0"\n"CurrentMajorVersionNumber"=dword:0000000a',
+                    ['C:\\System\\etc\\hosts']: '# Localhost entries\n127.0.0.1 localhost\n::1 localhost\n\n# Development entries\n127.0.0.1 local.dev\n127.0.0.1 api.local',
+                    ['C:\\System\\etc\\services']: '# Services\nftp 21/tcp\ntelnet 23/tcp\nsmtp 25/tcp\nhttp 80/tcp\nhttps 443/tcp\nmysql 3306/tcp',
+                    ['C:\\System\\etc\\protocols']: '# IP Protocols\nip 0\nicmp 1\nigmp 2\nggp 3\nip-encap 4\nst 5\ntcp 6\ncbp 7\nugp 17'
+                };
+            },
+
             initSearch() {
                 const searchInput = document.getElementById('taskbarSearch');
                 const searchResults = document.getElementById('searchResults');
@@ -73,7 +111,7 @@
 
                 // Define searchable items
                 const searchableItems = [
-                    // Apps - Portfolio
+                    // Apps - Profile
                     { title: 'My Profile', icon: '👤', type: 'app', windowType: 'profile' },
                     { title: 'Resume', icon: '📄', type: 'app', windowType: 'resume' },
                     { title: 'Projects', icon: '💻', type: 'app', windowType: 'projects' },
@@ -117,8 +155,10 @@
                     { title: 'LinkedIn', icon: '💼', type: 'contact', description: PROFILE.social.linkedin.display, windowType: 'contact' }
                 ];
 
-                searchInput.addEventListener('input', (e) => {
-                    const query = e.target.value.toLowerCase();
+                // Debounce search input (300ms delay)
+                let searchTimeout;
+                const performSearch = (query) => {
+                    query = query.toLowerCase();
 
                     if (!query.trim()) {
                         searchResults.classList.remove('active');
@@ -156,13 +196,23 @@
                             }
                         });
 
-                        // Remove selection when hovering
+                        // Select item on hover (for mouse users)
                         item.addEventListener('mouseenter', () => {
-                            searchResults.querySelectorAll('.search-result-item.selected').forEach(sel => sel.classList.remove('selected'));
+                            // Only clear previous selection if this is from mouse movement
+                            const previousSelected = searchResults.querySelector('.search-result-item.selected');
+                            if (previousSelected) previousSelected.classList.remove('selected');
+                            item.classList.add('selected');
                         });
                     });
 
                     searchResults.classList.add('active');
+                };
+
+                searchInput.addEventListener('input', (e) => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        performSearch(e.target.value);
+                    }, 300);
                 });
 
                 // Close search results and clear input when clicking elsewhere
@@ -338,6 +388,82 @@
                 this.updateTaskbar();
             },
 
+            loadCTFRules() {
+                const notepadWindow = this.windows.notepad;
+                if (notepadWindow) {
+                    const titleEl = notepadWindow.el.querySelector('#notepadTitle');
+                    const contentEl = notepadWindow.el.querySelector('#notepadContent');
+                    const filePathEl = notepadWindow.el.querySelector('#notepadFilePath');
+                    const statsEl = notepadWindow.el.querySelector('#notepadStats');
+
+                    if (titleEl) titleEl.textContent = 'CTF Rules';
+                    if (filePathEl) filePathEl.textContent = 'C:\\Users\\Steven\\ctf\\CTF_Rules.txt';
+
+                    const ctfRulesContent = `CAPTURE THE FLAG - RULES & GUIDELINES
+======================================
+
+1. OBJECTIVE:
+   Find hidden flags scattered throughout the filesystem.
+   Each flag has a unique format: FLAG{...}
+   Complete all 4 levels to master this CTF!
+   Plus: Find the bonus hidden flag!
+
+2. RULES:
+   - Use the Terminal to navigate the filesystem
+   - The File Manager cannot access challenge files (Access Denied)
+   - You must use terminal commands like: cd, dir, type, ls
+   - Files are visible in explorer but cannot be opened there
+   - Each level increases in difficulty
+
+3. AVAILABLE COMMANDS:
+   dir        - List directory contents
+   cd <path>  - Change directory
+   type <file>- Display file contents
+   help       - Show available commands
+
+4. LEVEL PROGRESSION:
+   Level 1: Easy - Basic flag in user's ctf folder
+   Level 2: Medium - Flag requires filesystem exploration
+   Level 3: Hard - Decryption challenge with ROT13 cipher
+   Level 4: Master - Combines knowledge from all previous levels
+
+5. CHALLENGE LOCATION RIDDLES:
+
+   Level 1 & 2: Start with: cd C:\\Users\\Steven\\ctf
+
+   Level 3: "Seek where the electrons dance, in the mechanical
+            minds that bridge the distance. Look for puzzle and
+            decoder in the depths where devices speak."
+
+   Level 4: "Where memories are kept in the dark, hidden beneath
+            layers of application whispers. Find final and master
+            in the storage of forgotten data."
+
+   BONUS: "In the realm of the temporary, where data sleeps
+          briefly before vanishing. Deeper still lies a secret
+          cache file, waiting in the shadows of fleeting storage."
+
+6. EXPLORATION HINTS:
+   - Start with: cd C:\\Users\\Steven\\ctf
+   - Each level has multiple files - read them all carefully
+   - Level 3 requires decoding: Use ROT13 algorithm
+   - Level 4 is the ultimate test combining all skills
+   - System folders are the key to advanced levels
+   - Explore the System directory structure thoroughly
+   - The deepest secrets hide in the most obscure paths
+
+7. SUCCESS:
+   Find all 4 flags + 1 bonus flag!
+   Compile your answers and prove you've conquered all levels!
+   Good luck!`;
+
+                    if (contentEl) {
+                        contentEl.textContent = ctfRulesContent;
+                        if (statsEl) statsEl.textContent = ctfRulesContent.length + ' characters';
+                    }
+                }
+            },
+
             updateTaskbar() {
                 const taskbarApps = document.getElementById('taskbarApps');
                 taskbarApps.innerHTML = '';
@@ -359,7 +485,13 @@
                         settings: '⚙️',
                         calculator: '🔢',
                         passwordgen: '🔐',
-                        todolist: '✅'
+                        todolist: '✅',
+                        imageviewer: '🖼️',
+                        notepad: '📝',
+                        filemanager: '📂',
+                        applications: '📚',
+                        base64decoder: '🔓',
+                        rot13decoder: '🔄'
                     };
 
                     const titles = {
@@ -371,7 +503,13 @@
                         settings: 'Settings',
                         calculator: 'Calculator',
                         passwordgen: 'Password Generator',
-                        todolist: 'To-Do List'
+                        todolist: 'To-Do List',
+                        imageviewer: 'Image Viewer',
+                        notepad: 'Notepad',
+                        filemanager: 'File Manager',
+                        applications: 'Applications',
+                        base64decoder: 'Base64 Decoder',
+                        rot13decoder: 'ROT13 Decoder'
                     };
                     
                     button.innerHTML = `
@@ -408,6 +546,8 @@
             selectedDate: new Date(),
             weatherData: null,
             locationData: null,
+            weatherCacheTimestamp: null,
+            WEATHER_CACHE_DURATION: 30 * 60 * 1000, // 30 minutes
             
             render() {
                 this.updateHeader();
@@ -417,40 +557,54 @@
 
             async loadWeather() {
                 const weatherContainer = document.getElementById('calendarWeather');
-                
+
                 try {
+                    // Check if cached data is still valid (within 30 minutes)
+                    const now = Date.now();
+                    if (this.weatherData && this.weatherCacheTimestamp &&
+                        (now - this.weatherCacheTimestamp) < this.WEATHER_CACHE_DURATION) {
+                        this.displayWeather();
+                        return;
+                    }
+
                     // First, get user's location from IP
                     await this.getLocationFromIP();
-                    
+
                     if (!this.locationData) {
                         throw new Error('Could not determine location');
                     }
-                    
+
                     // Then fetch weather for that location
                     const response = await fetch(
-                        `https://api.open-meteo.com/v1/forecast?latitude=${this.locationData.lat}&longitude=${this.locationData.lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,pressure_msl,uv_index&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`
+                        `https://api.open-meteo.com/v1/forecast?latitude=${this.locationData.lat}&longitude=${this.locationData.lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,pressure_msl,uv_index&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`,
+                        { signal: AbortSignal.timeout(10000) } // 10 second timeout
                     );
-                    
+
                     if (!response.ok) throw new Error('Weather fetch failed');
-                    
+
                     const data = await response.json();
                     this.weatherData = data.current;
                     this.dailyWeather = data.daily;
+                    this.weatherCacheTimestamp = now; // Cache timestamp
                     this.displayWeather();
-                    
+
                 } catch (error) {
                     console.error('Weather error:', error);
-                    weatherContainer.innerHTML = '<div class="weather-error">Weather unavailable</div>';
-                    
+                    const errorMsg = error.name === 'AbortError' ? 'Weather request timed out' : 'Weather unavailable';
+
+                    if (weatherContainer) {
+                        weatherContainer.innerHTML = `<div class="weather-error">${errorMsg}</div>`;
+                    }
+
                     // Update taskbar with error state
                     const taskbarWeather = document.getElementById('taskbarWeather');
                     if (taskbarWeather) {
                         taskbarWeather.innerHTML = `
                             <div class="taskbar-weather-main">
-                                <span class="taskbar-weather-icon">🌡️</span>
+                                <span class="taskbar-weather-icon">⚠️</span>
                                 <span class="taskbar-weather-temp">--°</span>
                             </div>
-                            <div class="taskbar-weather-location">Location Unknown</div>
+                            <div class="taskbar-weather-location">Unavailable</div>
                         `;
                     }
                 }
@@ -836,8 +990,11 @@
                     passwordgen: { title: 'Password Generator', width: 650, height: 550 },
                     todolist: { title: 'To-Do List', width: 500, height: 500 },
                     base64decoder: { title: 'Base64 Decoder', width: 650, height: 500 },
+                    rot13decoder: { title: 'ROT13 Decoder', width: 650, height: 500 },
                     applications: { title: 'Applications', width: 700, height: 550 },
-                    filemanager: { title: 'File Manager', width: 800, height: 600 }
+                    filemanager: { title: 'File Manager', width: 800, height: 600 },
+                    imageviewer: { title: 'Image Viewer', width: 700, height: 800 },
+                    notepad: { title: 'Notepad', width: 800, height: 500 }
                 }[this.type];
 
                 const x = 50 + Object.keys(app.windows).length * 30;
@@ -845,6 +1002,7 @@
 
                 this.el = document.createElement('div');
                 this.el.className = `window${this.type === 'terminal' ? ' terminal' : ''}`;
+                this.el.setAttribute('data-type', this.type);
                 this.el.style.width = config.width + 'px';
                 this.el.style.height = config.height + 'px';
                 this.el.style.left = x + 'px';
@@ -857,9 +1015,9 @@
                 header.innerHTML = `
                     <span class="window-title">${config.title}</span>
                     <div class="window-controls">
-                        <button class="window-button minimize-btn" title="Minimize">−</button>
-                        <button class="window-button maximize-btn" title="Maximize">□</button>
-                        <button class="window-button close close-btn">×</button>
+                        <button class="window-button minimize-btn" title="Minimize" aria-label="Minimize ${config.title} window">−</button>
+                        <button class="window-button maximize-btn" title="Maximize" aria-label="Maximize ${config.title} window">□</button>
+                        <button class="window-button close close-btn" title="Close" aria-label="Close ${config.title} window">×</button>
                     </div>
                 `;
 
@@ -923,6 +1081,16 @@
                 if (this.isMaximized) return;
                 e.preventDefault();
 
+                // Window-specific min sizes
+                const minSizeConfig = {
+                    calculator: { minWidth: 320, minHeight: 280 },
+                    terminal: { minWidth: 350, minHeight: 250 },
+                    notepad: { minWidth: 350, minHeight: 250 },
+                    imageviewer: { minWidth: 400, minHeight: 350 },
+                    default: { minWidth: 300, minHeight: 200 }
+                };
+                const minSize = minSizeConfig[this.type] || minSizeConfig.default;
+
                 this.isResizing = true;
                 const startX = e.clientX;
                 const startY = e.clientY;
@@ -945,17 +1113,17 @@
 
                     // Handle width
                     if (position.includes('r')) {
-                        newWidth = Math.max(300, startWidth + deltaX);
+                        newWidth = Math.max(minSize.minWidth, startWidth + deltaX);
                     } else if (position.includes('l')) {
-                        newWidth = Math.max(300, startWidth - deltaX);
+                        newWidth = Math.max(minSize.minWidth, startWidth - deltaX);
                         newLeft = startLeft + deltaX;
                     }
 
                     // Handle height
                     if (position.includes('b')) {
-                        newHeight = Math.max(200, startHeight + deltaY);
+                        newHeight = Math.max(minSize.minHeight, startHeight + deltaY);
                     } else if (position.includes('t')) {
-                        newHeight = Math.max(200, startHeight - deltaY);
+                        newHeight = Math.max(minSize.minHeight, startHeight - deltaY);
                         newTop = startTop + deltaY;
                     }
 
@@ -1117,96 +1285,7 @@
                 } else if (this.type === 'resume') {
                     this.animateSkillBars();
                 } else if (this.type === 'settings') {
-                    const themeSelect = content.querySelector('#themeSelect');
-                    if (themeSelect) {
-                        themeSelect.addEventListener('change', (e) => this.changeTheme(e.target.value));
-                    }
-                    const opacitySlider = content.querySelector('#opacitySlider');
-                    if (opacitySlider) {
-                        opacitySlider.addEventListener('input', (e) => {
-                            document.querySelector('.gradient-bg').style.opacity = e.target.value / 100;
-                            content.querySelector('#opacityValue').textContent = e.target.value + '%';
-                        });
-                    }
-
-                    // Display Settings
-                    const fontSizeSlider = content.querySelector('#fontSizeSlider');
-                    if (fontSizeSlider) {
-                        fontSizeSlider.addEventListener('input', (e) => {
-                            document.documentElement.style.fontSize = e.target.value + '%';
-                            content.querySelector('#fontSizeValue').textContent = e.target.value + '%';
-                        });
-                    }
-
-                    const blurToggle = content.querySelector('#blurToggle');
-                    if (blurToggle) {
-                        blurToggle.addEventListener('change', (e) => {
-                            const windows = document.querySelectorAll('.window');
-                            windows.forEach(w => {
-                                if (e.target.checked) {
-                                    w.style.backdropFilter = 'blur(10px)';
-                                } else {
-                                    w.style.backdropFilter = 'none';
-                                }
-                            });
-                        });
-                    }
-
-                    const contrastToggle = content.querySelector('#contrastToggle');
-                    if (contrastToggle) {
-                        contrastToggle.addEventListener('change', (e) => {
-                            document.body.style.filter = e.target.checked ? 'contrast(1.2)' : 'contrast(1)';
-                        });
-                    }
-
-                    // Window Behavior
-                    const snapToggle = content.querySelector('#snapToggle');
-                    if (snapToggle) {
-                        snapToggle.addEventListener('change', (e) => {
-                            window.snapToGrid = e.target.checked;
-                        });
-                    }
-
-                    const autoArrangeToggle = content.querySelector('#autoArrangeToggle');
-                    if (autoArrangeToggle) {
-                        autoArrangeToggle.addEventListener('change', (e) => {
-                            window.autoArrangeWindows = e.target.checked;
-                        });
-                    }
-
-                    const alwaysOnTopToggle = content.querySelector('#alwaysOnTopToggle');
-                    if (alwaysOnTopToggle) {
-                        alwaysOnTopToggle.addEventListener('change', (e) => {
-                            const taskbar = document.querySelector('.taskbar');
-                            if (taskbar) {
-                                taskbar.style.zIndex = e.target.checked ? '9999' : '100';
-                            }
-                        });
-                    }
-
-                    // Performance
-                    const animSpeedSlider = content.querySelector('#animSpeedSlider');
-                    if (animSpeedSlider) {
-                        animSpeedSlider.addEventListener('input', (e) => {
-                            const speeds = ['Slow', 'Normal', 'Fast'];
-                            content.querySelector('#animSpeedValue').textContent = speeds[e.target.value];
-                            document.documentElement.style.setProperty('--animation-speed', (2 - e.target.value) + 's');
-                        });
-                    }
-
-                    const gpuToggle = content.querySelector('#gpuToggle');
-                    if (gpuToggle) {
-                        gpuToggle.addEventListener('change', (e) => {
-                            const windows = document.querySelectorAll('.window');
-                            windows.forEach(w => {
-                                if (e.target.checked) {
-                                    w.style.transform = 'translate3d(0,0,0)';
-                                } else {
-                                    w.style.transform = 'none';
-                                }
-                            });
-                        });
-                    }
+                    this.initSettings(content);
                 } else if (this.type === 'projects') {
                     this.initProjects(content);
                 } else if (this.type === 'calculator') {
@@ -1215,13 +1294,237 @@
                     this.initPasswordGen(content);
                 } else if (this.type === 'base64decoder') {
                     this.initBase64Decoder(content);
+                } else if (this.type === 'rot13decoder') {
+                    this.initRot13Decoder(content);
                 } else if (this.type === 'todolist') {
                     this.initTodoList(content);
                 } else if (this.type === 'applications') {
                     this.initApplications(content);
                 } else if (this.type === 'filemanager') {
                     this.initFileManager(content);
+                } else if (this.type === 'imageviewer') {
+                    this.initImageViewer(content);
+                } else if (this.type === 'notepad') {
+                    this.initNotepad(content);
                 }
+            }
+
+            initSettings(content) {
+                const mainView = content.querySelector('#settingsMainView');
+                const detailView = content.querySelector('#settingsDetailView');
+                const categoryContent = content.querySelector('#settingsCategoryContent');
+
+                const self = this;
+
+                // Navigation methods
+                this.openCategory = (category) => {
+                    mainView.style.display = 'none';
+                    detailView.style.display = 'block';
+
+                    const categoryContents = {
+                        display: `
+                            <h2 style="margin: 0 0 20px 0; color: #333; font-size: 20px;">🎨 Display & Personalization</h2>
+                            <div style="background: white; border-radius: 8px; padding: 20px; border: 1px solid rgba(102, 126, 234, 0.2); margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #333;">Theme</label>
+                                <select id="settingsThemeSelect" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                                    <option value="default">Default</option>
+                                    <option value="sunset">Sunset Gradient</option>
+                                    <option value="ocean">Ocean Gradient</option>
+                                    <option value="cyberpunk">Cyberpunk Gradient</option>
+                                    <option value="forest">Forest Gradient</option>
+                                    <option value="dark">Dark Gradient</option>
+                                </select>
+                            </div>
+                            <div style="background: white; border-radius: 8px; padding: 20px; border: 1px solid rgba(102, 126, 234, 0.2);">
+                                <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #333;">Background Opacity: <span id="settingsOpacityValue">100%</span></label>
+                                <input type="range" id="settingsOpacitySlider" min="0" max="100" value="100" style="width: 100%;">
+                            </div>
+                        `,
+                        sound: `
+                            <h2 style="margin: 0 0 20px 0; color: #333; font-size: 20px;">🔊 Sound</h2>
+                            <div style="background: white; border-radius: 8px; padding: 20px; border: 1px solid rgba(102, 126, 234, 0.2); margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #333;">Master Volume: <span id="settingsVolValue">100%</span></label>
+                                <input type="range" id="settingsVolSlider" min="0" max="100" value="100" style="width: 100%; margin-bottom: 15px;">
+                                <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                    <input type="checkbox" id="settingsSoundEffectsToggle" checked style="width: 16px; height: 16px;">
+                                    <span style="color: #333;">Enable Sound Effects</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="checkbox" id="settingsMuteMicToggle" style="width: 16px; height: 16px;">
+                                    <span style="color: #333;">Mute Microphone</span>
+                                </label>
+                            </div>
+                            <div style="background: #f0f4f8; border-radius: 8px; padding: 15px; border-left: 4px solid #667eea;">
+                                <p style="margin: 0; font-size: 12px; color: #666;"><strong>Audio Device:</strong> Stereo Mix</p>
+                            </div>
+                        `,
+                        network: `
+                            <h2 style="margin: 0 0 20px 0; color: #333; font-size: 20px;">🌐 Network</h2>
+                            <div style="background: white; border-radius: 8px; padding: 20px; border: 1px solid rgba(102, 126, 234, 0.2); margin-bottom: 15px;">
+                                <p style="margin: 0 0 15px 0; font-size: 12px; font-weight: 600; color: #999;">CONNECTION STATUS</p>
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                                    <div style="width: 12px; height: 12px; background: #0dbc79; border-radius: 50%;"></div>
+                                    <span style="color: #0dbc79; font-weight: 600;">Connected</span>
+                                </div>
+                                <p style="margin: 0; font-size: 13px; color: #333;"><strong>IP Address:</strong> 192.168.1.100</p>
+                                <p style="margin: 5px 0 0 0; font-size: 13px; color: #333;"><strong>Network Adapter:</strong> Ethernet</p>
+                                <p style="margin: 5px 0 0 0; font-size: 13px; color: #333;"><strong>Speed:</strong> 1000 Mbps</p>
+                                <p style="margin: 5px 0 0 0; font-size: 13px; color: #333;"><strong>Gateway:</strong> 192.168.1.1</p>
+                            </div>
+                        `,
+                        system: `
+                            <h2 style="margin: 0 0 20px 0; color: #333; font-size: 20px;">💻 System</h2>
+                            <div style="background: white; border-radius: 8px; padding: 20px; border: 1px solid rgba(102, 126, 234, 0.2);">
+                                <h3 style="margin: 0 0 12px 0; color: #333; font-size: 14px; font-weight: 600;">Device Information</h3>
+                                <p style="margin: 5px 0; font-size: 13px; color: #333;"><strong>Device Name:</strong> Portfolio-PC</p>
+                                <p style="margin: 5px 0; font-size: 13px; color: #333;"><strong>OS:</strong> Portfolio OS v2.0</p>
+                                <p style="margin: 5px 0; font-size: 13px; color: #333;"><strong>Build:</strong> 2024.1</p>
+                                <p style="margin: 5px 0; font-size: 13px; color: #333;"><strong>Processor:</strong> Virtual Processor</p>
+                                <p style="margin: 5px 0; font-size: 13px; color: #333;"><strong>RAM:</strong> 16 GB</p>
+                                <p style="margin: 5px 0; font-size: 13px; color: #333;"><strong>System Type:</strong> x64-based</p>
+                                <p style="margin: 5px 0; font-size: 13px; color: #333;"><strong>Uptime:</strong> 48 hours 32 minutes</p>
+                                <hr style="border: none; border-top: 1px solid #eee; margin: 15px 0;">
+                                <h3 style="margin: 0 0 12px 0; color: #333; font-size: 14px; font-weight: 600;">Portfolio Info</h3>
+                                <p style="margin: 5px 0; font-size: 13px; color: #333;"><strong>Created By:</strong> ${PROFILE.name}</p>
+                                <p style="margin: 5px 0; font-size: 13px; color: #333;"><strong>Email:</strong> ${PROFILE.email}</p>
+                                <p style="margin: 5px 0; font-size: 13px; color: #333;"><strong>Website:</strong> ${PROFILE.website}</p>
+                            </div>
+                        `,
+                        accessibility: `
+                            <h2 style="margin: 0 0 20px 0; color: #333; font-size: 20px;">♿ Accessibility</h2>
+                            <div style="background: white; border-radius: 8px; padding: 20px; border: 1px solid rgba(102, 126, 234, 0.2); margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #333;">Background Opacity: <span id="settingsAccessOpacityValue">100%</span></label>
+                                <input type="range" id="settingsAccessOpacitySlider" min="0" max="100" value="100" style="width: 100%; margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #333;">Text Size: <span id="settingsTextSizeValue">100%</span></label>
+                                <input type="range" id="settingsTextSizeSlider" min="80" max="120" value="100" style="width: 100%; margin-bottom: 15px;">
+                                <label style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="checkbox" id="settingsHighContrastToggle" style="width: 16px; height: 16px;">
+                                    <span style="color: #333;">High Contrast Mode</span>
+                                </label>
+                            </div>
+                        `,
+                        security: `
+                            <h2 style="margin: 0 0 20px 0; color: #333; font-size: 20px;">🔒 Security & Privacy</h2>
+                            <div style="background: white; border-radius: 8px; padding: 20px; border: 1px solid rgba(102, 126, 234, 0.2); margin-bottom: 15px;">
+                                <div style="margin-bottom: 15px;">
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                        <div style="width: 12px; height: 12px; background: #0dbc79; border-radius: 50%;"></div>
+                                        <span style="color: #333; font-weight: 600;">Security Status</span>
+                                    </div>
+                                    <p style="margin: 0; font-size: 13px; color: #0dbc79;"><strong>✓ All Systems Protected</strong></p>
+                                </div>
+                                <hr style="border: none; border-top: 1px solid #eee; margin: 15px 0;">
+                                <p style="margin: 5px 0; font-size: 13px; color: #333;"><strong>Firewall:</strong> Enabled</p>
+                                <p style="margin: 5px 0; font-size: 13px; color: #333;"><strong>Antivirus:</strong> Active</p>
+                                <p style="margin: 5px 0; font-size: 13px; color: #333;"><strong>Last Scan:</strong> 2 hours ago</p>
+                                <p style="margin: 5px 0; font-size: 13px; color: #333;"><strong>Privacy Mode:</strong> Off</p>
+                            </div>
+                        `,
+                        power: `
+                            <h2 style="margin: 0 0 20px 0; color: #333; font-size: 20px;">🔋 Power & Battery</h2>
+                            <div style="background: white; border-radius: 8px; padding: 20px; border: 1px solid rgba(102, 126, 234, 0.2); margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 15px; font-weight: 600; color: #333;">Power Plan</label>
+                                <select id="settingsPowerPlanSelect" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; margin-bottom: 15px;">
+                                    <option value="balanced">Balanced</option>
+                                    <option value="performance">High Performance</option>
+                                    <option value="powersaver">Power Saver</option>
+                                </select>
+                                <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #333;">Screen Timeout: <span id="settingsScreenTimeoutValue">10 minutes</span></label>
+                                <input type="range" id="settingsScreenTimeoutSlider" min="1" max="60" value="10" style="width: 100%; margin-bottom: 15px;">
+                                <p style="margin: 0; font-size: 13px; color: #666;"><strong>Battery Status:</strong> AC Powered</p>
+                            </div>
+                        `,
+                        devices: `
+                            <h2 style="margin: 0 0 20px 0; color: #333; font-size: 20px;">🖱️ Devices</h2>
+                            <div style="background: white; border-radius: 8px; padding: 20px; border: 1px solid rgba(102, 126, 234, 0.2); margin-bottom: 15px;">
+                                <h3 style="margin: 0 0 12px 0; color: #333; font-size: 14px; font-weight: 600;">Connected Devices</h3>
+                                <div style="margin-bottom: 12px; padding: 10px; background: #f5f7fa; border-radius: 6px;">
+                                    <p style="margin: 0; font-size: 13px;"><strong>🖱️ Mouse</strong> - Logitech MX Master 3</p>
+                                </div>
+                                <div style="margin-bottom: 12px; padding: 10px; background: #f5f7fa; border-radius: 6px;">
+                                    <p style="margin: 0; font-size: 13px;"><strong>⌨️ Keyboard</strong> - Mechanical RGB Keyboard</p>
+                                </div>
+                                <div style="margin-bottom: 12px; padding: 10px; background: #f5f7fa; border-radius: 6px;">
+                                    <p style="margin: 0; font-size: 13px;"><strong>🎮 Controller</strong> - Xbox Wireless Controller</p>
+                                </div>
+                                <hr style="border: none; border-top: 1px solid #eee; margin: 15px 0;">
+                                <h3 style="margin: 0 0 12px 0; color: #333; font-size: 14px; font-weight: 600;">Device Settings</h3>
+                                <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                    <input type="checkbox" id="settingsMouseAccelToggle" checked style="width: 16px; height: 16px;">
+                                    <span style="color: #333;">Mouse Acceleration</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="checkbox" id="settingsNumLockToggle" checked style="width: 16px; height: 16px;">
+                                    <span style="color: #333;">Num Lock on Startup</span>
+                                </label>
+                            </div>
+                        `
+                    };
+
+                    categoryContent.innerHTML = categoryContents[category] || '';
+                    self.setupCategoryListeners(category, content);
+                };
+
+                this.backToMain = () => {
+                    mainView.style.display = 'block';
+                    detailView.style.display = 'none';
+                };
+
+                this.setupCategoryListeners = (category, content) => {
+                    if (category === 'display') {
+                        const themeSelect = content.querySelector('#settingsThemeSelect');
+                        if (themeSelect) {
+                            themeSelect.addEventListener('change', (e) => self.changeTheme(e.target.value));
+                        }
+                        const opacitySlider = content.querySelector('#settingsOpacitySlider');
+                        if (opacitySlider) {
+                            opacitySlider.addEventListener('input', (e) => {
+                                document.querySelector('.gradient-bg').style.opacity = e.target.value / 100;
+                                content.querySelector('#settingsOpacityValue').textContent = e.target.value + '%';
+                            });
+                        }
+                    } else if (category === 'sound') {
+                        const volSlider = content.querySelector('#settingsVolSlider');
+                        if (volSlider) {
+                            volSlider.addEventListener('input', (e) => {
+                                content.querySelector('#settingsVolValue').textContent = e.target.value + '%';
+                            });
+                        }
+                    } else if (category === 'accessibility') {
+                        const accessOpacitySlider = content.querySelector('#settingsAccessOpacitySlider');
+                        if (accessOpacitySlider) {
+                            accessOpacitySlider.addEventListener('input', (e) => {
+                                document.querySelector('.gradient-bg').style.opacity = e.target.value / 100;
+                                content.querySelector('#settingsAccessOpacityValue').textContent = e.target.value + '%';
+                            });
+                        }
+                        const textSizeSlider = content.querySelector('#settingsTextSizeSlider');
+                        if (textSizeSlider) {
+                            textSizeSlider.addEventListener('input', (e) => {
+                                document.documentElement.style.fontSize = e.target.value + '%';
+                                content.querySelector('#settingsTextSizeValue').textContent = e.target.value + '%';
+                            });
+                        }
+                        const highContrastToggle = content.querySelector('#settingsHighContrastToggle');
+                        if (highContrastToggle) {
+                            highContrastToggle.addEventListener('change', (e) => {
+                                document.body.style.filter = e.target.checked ? 'contrast(1.2)' : 'contrast(1)';
+                            });
+                        }
+                    } else if (category === 'power') {
+                        const screenTimeoutSlider = content.querySelector('#settingsScreenTimeoutSlider');
+                        if (screenTimeoutSlider) {
+                            screenTimeoutSlider.addEventListener('input', (e) => {
+                                const times = ['1 min', '5 mins', '10 mins', '15 mins', '30 mins', '45 mins', '1 hour'];
+                                const idx = Math.floor((e.target.value - 1) / 9);
+                                content.querySelector('#settingsScreenTimeoutValue').textContent = times[Math.min(idx, times.length - 1)];
+                            });
+                        }
+                    }
+                };
+
+                // Store reference
+                app.windows.settings = this;
             }
 
             initProjects(content) {
@@ -1420,6 +1723,35 @@
                 app.windows.base64decoder = this;
             }
 
+            initRot13Decoder(content) {
+                const testInput = content.querySelector('#rot13TestInput');
+                const testOutput = content.querySelector('#rot13TestOutput');
+
+                // ROT13 algorithm implementation
+                const rot13 = (str) => {
+                    return str.replace(/[a-zA-Z]/g, function(c) {
+                        return String.fromCharCode((c <= 'Z' ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26);
+                    });
+                };
+
+                // Real-time conversion as user types
+                testInput.addEventListener('input', (e) => {
+                    const input = e.target.value;
+                    if (!input) {
+                        testOutput.textContent = '-';
+                    } else {
+                        const result = rot13(input);
+                        testOutput.textContent = result;
+                    }
+                });
+
+                // Focus on input when window opens
+                testInput.focus();
+
+                // Store reference on window object for access
+                app.windows.rot13decoder = this;
+            }
+
             initPasswordGen(content) {
                 const lengthInput = content.querySelector('#pwLength');
                 const displayArea = content.querySelector('#pwDisplay');
@@ -1518,10 +1850,23 @@
                 const addBtn = content.querySelector('#todoAddBtn');
                 const taskList = content.querySelector('#todoList');
 
-                let todos = JSON.parse(localStorage.getItem('todos')) || [];
+                let todos = [];
+                try {
+                    todos = JSON.parse(localStorage.getItem('todos')) || [];
+                } catch (e) {
+                    console.warn('Failed to load todos from localStorage:', e);
+                    todos = [];
+                }
 
                 const saveTodos = () => {
-                    localStorage.setItem('todos', JSON.stringify(todos));
+                    try {
+                        localStorage.setItem('todos', JSON.stringify(todos));
+                    } catch (e) {
+                        console.error('Failed to save todos to localStorage:', e);
+                        if (e.name === 'QuotaExceededError') {
+                            alert('Storage quota exceeded. Could not save todos.');
+                        }
+                    }
                 };
 
                 const renderTodos = () => {
@@ -1583,15 +1928,240 @@
             }
 
             initApplications(content) {
-                const toolItems = content.querySelectorAll('.tool-item');
+                const navigationHistory = [];
+                let currentPath = 'Applications';
+                const expandedFolders = new Set(['Applications', 'Applications-Tools', 'Applications-Utilities']);
 
-                toolItems.forEach(item => {
-                    // Single click to launch (like desktop icons)
-                    item.addEventListener('click', () => {
-                        const toolType = item.getAttribute('data-tool');
-                        app.openWindow(toolType);
+                // Application categories structure (like folders)
+                const appStructure = {
+                    'Applications': ['Tools', 'Utilities'],
+                    'Applications-Tools': [
+                        { name: 'Password Generator', tool: 'passwordgen', icon: '🔐' },
+                        { name: 'Base64 Decoder', tool: 'base64decoder', icon: '🔓' },
+                        { name: 'ROT13 Cipher', tool: 'rot13decoder', icon: '🔄' },
+                        { name: 'To-Do List', tool: 'todolist', icon: '✅' },
+                        { name: 'Image Viewer', tool: 'imageviewer', icon: '🖼️' },
+                        { name: 'Notepad', tool: 'notepad', icon: '📝' }
+                    ],
+                    'Applications-Utilities': [
+                        { name: 'Terminal', tool: 'terminal', icon: '$_' },
+                        { name: 'Calculator', tool: 'calculator', icon: '🔢' }
+                    ]
+                };
+
+                const buildSidebarTree = () => {
+                    const treeContainer = content.querySelector('.filemanager-tree');
+                    treeContainer.innerHTML = '';
+
+                    const createTreeItem = (path, name, indent = 0, hasChildren = false, appData = null) => {
+                        const itemContainer = document.createElement('div');
+                        itemContainer.className = 'folder-item-container';
+
+                        const item = document.createElement('div');
+                        item.className = 'folder-item';
+                        item.style.paddingLeft = (8 + indent * 16) + 'px';
+
+                        const isExpanded = expandedFolders.has(path);
+                        const expandArrow = hasChildren ? (isExpanded ? '▼' : '▶') : ' ';
+
+                        let icon = appData && appData.icon ? appData.icon : '📁';
+
+                        item.innerHTML = `
+                            <div class="folder-expand" style="min-width: 16px; text-align: center; cursor: ${hasChildren ? 'pointer' : 'default'}; font-size: 10px;">${expandArrow}</div>
+                            <div class="folder-icon">${icon}</div>
+                            <div class="folder-name">${name}</div>
+                        `;
+
+                        // Expand/collapse arrow click
+                        if (hasChildren) {
+                            const expandBtn = item.querySelector('.folder-expand');
+                            expandBtn.onclick = (e) => {
+                                e.stopPropagation();
+                                if (expandedFolders.has(path)) {
+                                    expandedFolders.delete(path);
+                                } else {
+                                    expandedFolders.add(path);
+                                }
+                                buildSidebarTree();
+                            };
+                        }
+
+                        // Click handler for folders and apps
+                        if (!appData) {
+                            // It's a folder
+                            item.onclick = () => this.openAppCategory(path);
+                        } else if (appData.tool) {
+                            // It's an application
+                            item.onclick = () => app.openWindow(appData.tool);
+                        }
+
+                        if (path === currentPath) {
+                            item.style.background = 'rgba(102, 126, 234, 0.1)';
+                            item.style.borderRadius = '4px';
+                        }
+
+                        itemContainer.appendChild(item);
+                        return itemContainer;
+                    };
+
+                    const buildTreeRecursive = (parentPath, parentName, indent = 0) => {
+                        if (!expandedFolders.has(parentPath)) return;
+
+                        const items = appStructure[parentPath] || [];
+
+                        items.forEach(item => {
+                            const itemName = typeof item === 'string' ? item : item.name;
+                            const isItemFolder = typeof item === 'string';
+                            const pathKey = itemName.replace(/\s+/g, '');
+                            const newPath = parentPath + '-' + pathKey;
+                            const hasChildren = appStructure[newPath] !== undefined && appStructure[newPath].length > 0;
+
+                            const appData = typeof item === 'string' ? null : item;
+                            treeContainer.appendChild(createTreeItem(newPath, itemName, indent + 1, hasChildren, appData));
+
+                            if (hasChildren && expandedFolders.has(newPath)) {
+                                buildTreeRecursive(newPath, itemName, indent + 1);
+                            }
+                        });
+                    };
+
+                    // Root
+                    const rootItems = appStructure['Applications'] || [];
+                    const rootHasChildren = rootItems.length > 0;
+                    treeContainer.appendChild(createTreeItem('Applications', 'Applications', 0, rootHasChildren, null));
+
+                    buildTreeRecursive('Applications', 'Applications', 0);
+                };
+
+                this.openAppCategory = (path) => {
+                    currentPath = path;
+                    const mainArea = content.querySelector('.filemanager-main');
+                    const pathDisplay = content.querySelector('.filemanager-path');
+                    const backButton = content.querySelector('.filemanager-back-btn');
+
+                    // Add to history
+                    if (navigationHistory.length === 0 || navigationHistory[navigationHistory.length - 1] !== path) {
+                        navigationHistory.push(path);
+                    }
+
+                    // Update back button
+                    if (backButton) {
+                        backButton.disabled = navigationHistory.length <= 1;
+                        backButton.style.opacity = navigationHistory.length <= 1 ? '0.5' : '1';
+                        backButton.style.cursor = navigationHistory.length <= 1 ? 'not-allowed' : 'pointer';
+                    }
+
+                    // Update path display
+                    let displayPath = path.replace(/^Applications-?/, '').replace(/-/g, '\\');
+                    pathDisplay.value = 'Applications\\' + displayPath;
+
+                    // Update sidebar
+                    buildSidebarTree();
+
+                    // Highlight current folder in sidebar
+                    setTimeout(() => {
+                        const treeContainer = content.querySelector('.filemanager-tree');
+                        const allFolderItems = treeContainer.querySelectorAll('.folder-item');
+                        allFolderItems.forEach(item => {
+                            item.style.background = '';
+                            item.style.borderRadius = '';
+                        });
+
+                        const lastFolderName = displayPath.split('\\').pop() || 'Applications';
+                        const currentFolderItem = Array.from(allFolderItems).find(item => {
+                            const itemText = item.textContent.replace(/\s+/g, '').toUpperCase();
+                            const searchText = lastFolderName.replace(/\s+/g, '').toUpperCase();
+                            return itemText.includes(searchText);
+                        });
+
+                        if (currentFolderItem) {
+                            currentFolderItem.style.background = 'rgba(102, 126, 234, 0.15)';
+                            currentFolderItem.style.borderRadius = '4px';
+                            currentFolderItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }
+                    }, 0);
+
+                    // Display items in main area
+                    const items = appStructure[path] || [];
+                    mainArea.innerHTML = '';
+
+                    items.forEach(item => {
+                        const itemName = typeof item === 'string' ? item : item.name;
+                        const isFolder = typeof item === 'string';
+                        const toolType = item.tool;
+                        const customIcon = typeof item === 'string' ? null : item.icon;
+
+                        let icon = isFolder ? '📁' : (customIcon || '📄');
+
+                        const fileDiv = document.createElement('div');
+                        fileDiv.className = `file-item ${isFolder ? 'folder' : 'app'}`;
+                        fileDiv.style.cursor = 'pointer';
+                        fileDiv.innerHTML = `
+                            <div class="file-icon">${icon}</div>
+                            <div class="file-name">${itemName}</div>
+                        `;
+
+                        if (isFolder) {
+                            const pathKey = itemName.replace(/\s+/g, '');
+                            const newPath = path + '-' + pathKey;
+                            fileDiv.onclick = () => this.openAppCategory(newPath);
+                        } else if (toolType) {
+                            fileDiv.onclick = () => app.openWindow(toolType);
+                        }
+
+                        mainArea.appendChild(fileDiv);
                     });
+                };
+
+                // Back button functionality
+                const backButton = content.querySelector('.filemanager-back-btn');
+                if (backButton) {
+                    backButton.onclick = () => {
+                        if (navigationHistory.length > 1) {
+                            navigationHistory.pop();
+                            const previousPath = navigationHistory[navigationHistory.length - 1];
+                            const tempHistory = navigationHistory.slice();
+                            navigationHistory.length = 0;
+                            navigationHistory.push(...tempHistory);
+                            this.openAppCategory(previousPath);
+                        }
+                    };
+                }
+
+                // Add resize handle to sidebar
+                const treeContainer = content.querySelector('.filemanager-tree');
+                const resizeHandle = document.createElement('div');
+                resizeHandle.className = 'filemanager-resize-handle';
+                treeContainer.appendChild(resizeHandle);
+
+                // Drag-to-resize functionality (scoped to this instance)
+                let isResizing = false;
+                const handleMouseMove = (e) => {
+                    if (!isResizing) return;
+                    const filemanagerContent = content.querySelector('.filemanager-content');
+                    const newWidth = e.clientX - filemanagerContent.getBoundingClientRect().left;
+                    if (newWidth >= 150 && newWidth <= 600) {
+                        treeContainer.style.width = newWidth + 'px';
+                    }
+                };
+
+                const handleMouseUp = () => {
+                    if (!isResizing) return;
+                    isResizing = false;
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', handleMouseUp);
+                };
+
+                resizeHandle.addEventListener('mousedown', (e) => {
+                    isResizing = true;
+                    e.preventDefault();
+                    document.addEventListener('mousemove', handleMouseMove);
+                    document.addEventListener('mouseup', handleMouseUp);
                 });
+
+                // Initialize the sidebar tree
+                buildSidebarTree();
+                this.openAppCategory('Applications-Tools');
 
                 app.windows.applications = this;
             }
@@ -1600,35 +2170,128 @@
                 const navigationHistory = [];
                 let currentPath = 'C';
                 // Expand important folders by default
+                const userName = PROFILE.name.split(' ')[0];
                 const expandedFolders = new Set([
                     'C',
                     'C-Users',
                     'C-ProgramFiles',
                     'C-ProgramFiles-Applications',
-                    `C-Users-${PROFILE.name.split(' ')[0]}`,
-                    `C-Users-${PROFILE.name.split(' ')[0]}-Portfolio`
+                    'C-ProgramFiles-Applications-Tools',
+                    'C-ProgramFiles-Applications-Utilities',
+                    'C-System',
+                    'C-System-drivers',
+                    'C-System-drivers-network',
+                    'C-System-drivers-storage',
+                    'C-System-config',
+                    'C-System-etc',
+                    'C-System-appdata',
+                    'C-System-appdata-local',
+                    'C-System-appdata-local-temp',
+                    'C-System-appdata-local-cache',
+                    `C-Users-${userName}`,
+                    `C-Users-${userName}-images`,
+                    `C-Users-${userName}-resume`
+                    // CTF folders are intentionally NOT expanded by default
                 ]); // Track which folders are expanded
 
                 const folderStructure = {
                     'C': ['Users', 'Program Files', 'System'],
                     'C-Users': [{ name: `${PROFILE.name.split(' ')[0]}`, isFolder: true }],
-                    [`C-Users-${PROFILE.name.split(' ')[0]}`]: [{ name: 'Portfolio', isFolder: true }],
-                    [`C-Users-${PROFILE.name.split(' ')[0]}-Portfolio`]: [
-                        { name: 'Projects.pdf', isFolder: false, action: 'projects', icon: '📄' },
-                        { name: 'Skills.pdf', isFolder: false, action: 'resume', icon: '📄' },
-                        { name: 'Resume.pdf', isFolder: false, action: 'resume', icon: '📄' }
+                    [`C-Users-${PROFILE.name.split(' ')[0]}`]: [
+                        { name: 'images', isFolder: true },
+                        { name: 'resume', isFolder: true },
+                        { name: 'ctf', isFolder: true }
+                    ],
+                    [`C-Users-${PROFILE.name.split(' ')[0]}-images`]: [
+                        { name: 'profile.jpeg', isFolder: false, icon: '🖼️', action: 'imageviewer', filePath: 'images/profile.jpeg' },
+                        { name: 'Steven and Isabella Disney.jpg', isFolder: false, icon: '🖼️', action: 'imageviewer', filePath: 'images/Steven and Isabella Disney.jpg' },
+                        { name: 'Steven and Isabella Event.jpg', isFolder: false, icon: '🖼️', action: 'imageviewer', filePath: 'images/Steven and Isabella Event.jpg' },
+                        { name: 'Steven and Isabella Fair.jpg', isFolder: false, icon: '🖼️', action: 'imageviewer', filePath: 'images/Steven and Isabella Fair.jpg' },
+                        { name: 'Steven and Isabella Rodeo.jpg', isFolder: false, icon: '🖼️', action: 'imageviewer', filePath: 'images/Steven and Isabella Rodeo.jpg' }
+                    ],
+                    [`C-Users-${PROFILE.name.split(' ')[0]}-resume`]: [
+                        { name: PROFILE.resume.filename, isFolder: false, icon: '📄', action: 'resume' }
+                    ],
+                    [`C-Users-${PROFILE.name.split(' ')[0]}-ctf`]: [
+                        { name: 'challenges', isFolder: true },
+                        { name: 'hints.txt', isFolder: false, icon: '📄', action: 'notepad', filePath: `ctf\\hints.txt` },
+                        { name: 'CTF_Rules.txt', isFolder: false, icon: '📄', action: 'notepad', filePath: `ctf\\CTF_Rules.txt` }
+                    ],
+                    [`C-Users-${PROFILE.name.split(' ')[0]}-ctf-challenges`]: [
+                        { name: 'level1', isFolder: true },
+                        { name: 'level2', isFolder: true }
+                    ],
+                    [`C-Users-${PROFILE.name.split(' ')[0]}-ctf-challenges-level1`]: [
+                        { name: 'README.txt', isFolder: false, icon: '📄', action: 'notepad', filePath: `ctf\\challenges\\level1\\README.txt` },
+                        { name: 'secret.txt', isFolder: false, icon: '📄', action: 'notepad', filePath: `ctf\\challenges\\level1\\secret.txt` }
+                    ],
+                    [`C-Users-${PROFILE.name.split(' ')[0]}-ctf-challenges-level2`]: [
+                        { name: 'advanced.txt', isFolder: false, icon: '📄', action: 'notepad', filePath: `ctf\\challenges\\level2\\advanced.txt` },
+                        { name: 'flag.txt', isFolder: false, icon: '📄', action: 'notepad', filePath: `ctf\\challenges\\level2\\flag.txt` }
                     ],
                     'C-ProgramFiles': [
                         { name: 'Applications', isFolder: true }
                     ],
                     'C-ProgramFiles-Applications': [
-                        { name: 'Terminal', isFolder: false, action: 'terminal', icon: '$_' },
-                        { name: 'Calculator', isFolder: false, action: 'calculator', icon: '🔢' },
+                        { name: 'Tools', isFolder: true },
+                        { name: 'Utilities', isFolder: true }
+                    ],
+                    'C-ProgramFiles-Applications-Tools': [
                         { name: 'Password Generator', isFolder: false, action: 'passwordgen', icon: '🔐' },
                         { name: 'Base64 Decoder', isFolder: false, action: 'base64decoder', icon: '🔓' },
-                        { name: 'To-Do List', isFolder: false, action: 'todolist', icon: '✅' }
+                        { name: 'ROT13 Decoder', isFolder: false, action: 'rot13decoder', icon: '🔄' },
+                        { name: 'To-Do List', isFolder: false, action: 'todolist', icon: '✅' },
+                        { name: 'Image Viewer', isFolder: false, action: 'imageviewer', icon: '🖼️' }
                     ],
-                    'C-System': ['drivers', 'config', 'etc']
+                    'C-ProgramFiles-Applications-Utilities': [
+                        { name: 'Terminal', isFolder: false, action: 'terminal', icon: '$_' },
+                        { name: 'Calculator', isFolder: false, action: 'calculator', icon: '🔢' }
+                    ],
+                    'C-System': [
+                        { name: 'drivers', isFolder: true },
+                        { name: 'config', isFolder: true },
+                        { name: 'etc', isFolder: true },
+                        { name: 'appdata', isFolder: true },
+                        { name: 'settings.ini', isFolder: false, icon: '⚙️', action: 'notepad', filePath: `System\\settings.ini` }
+                    ],
+                    'C-System-drivers': [
+                        { name: 'network', isFolder: true },
+                        { name: 'storage', isFolder: true }
+                    ],
+                    'C-System-drivers-network': [
+                        { name: 'ethernet.sys', isFolder: false, icon: '📄', action: 'notepad', filePath: `System\\drivers\\network\\ethernet.sys` },
+                        { name: 'wifi.sys', isFolder: false, icon: '📄', action: 'notepad', filePath: `System\\drivers\\network\\wifi.sys` },
+                        { name: 'puzzle.txt', isFolder: false, icon: '📄', action: 'notepad', filePath: `System\\drivers\\network\\puzzle.txt` },
+                        { name: 'decoder.txt', isFolder: false, icon: '📄', action: 'notepad', filePath: `System\\drivers\\network\\decoder.txt` }
+                    ],
+                    'C-System-drivers-storage': [
+                        { name: 'disk.sys', isFolder: false, icon: '📄', action: 'notepad', filePath: `System\\drivers\\storage\\disk.sys` },
+                        { name: 'usb.sys', isFolder: false, icon: '📄', action: 'notepad', filePath: `System\\drivers\\storage\\usb.sys` }
+                    ],
+                    'C-System-config': [
+                        { name: 'boot.ini', isFolder: false, icon: '📄', action: 'notepad', filePath: `System\\config\\boot.ini` },
+                        { name: 'registry.dat', isFolder: false, icon: '📄', action: 'notepad', filePath: `System\\config\\registry.dat` }
+                    ],
+                    'C-System-etc': [
+                        { name: 'hosts', isFolder: false, icon: '📄', action: 'notepad', filePath: `System\\etc\\hosts` },
+                        { name: 'services', isFolder: false, icon: '📄', action: 'notepad', filePath: `System\\etc\\services` },
+                        { name: 'protocols', isFolder: false, icon: '📄', action: 'notepad', filePath: `System\\etc\\protocols` }
+                    ],
+                    'C-System-appdata': [
+                        { name: 'local', isFolder: true }
+                    ],
+                    'C-System-appdata-local': [
+                        { name: 'temp', isFolder: true },
+                        { name: 'cache', isFolder: true }
+                    ],
+                    'C-System-appdata-local-temp': [
+                        { name: '~temp.cache', isFolder: false, icon: '📄', action: 'notepad', filePath: `System\\appdata\\local\\temp\\~temp.cache` }
+                    ],
+                    'C-System-appdata-local-cache': [
+                        { name: 'app.cache', isFolder: false, icon: '📄', action: 'notepad', filePath: `System\\appdata\\local\\cache\\app.cache` },
+                        { name: 'final.txt', isFolder: false, icon: '📄', action: 'notepad', filePath: `System\\appdata\\local\\cache\\final.txt` },
+                        { name: 'master.txt', isFolder: false, icon: '📄', action: 'notepad', filePath: `System\\appdata\\local\\cache\\master.txt` }
+                    ]
                 };
 
                 const buildSidebarTree = () => {
@@ -1678,7 +2341,36 @@
                         if (isFolder) {
                             item.onclick = () => this.openFolder(path);
                         } else if (fileData && fileData.action) {
-                            item.onclick = () => app.openWindow(fileData.action);
+                            item.onclick = () => {
+                                // Check if trying to access protected CTF/Challenge files
+                                if (fileData.filePath && (
+                                    fileData.filePath.toLowerCase().includes('ctf') ||
+                                    fileData.filePath.toLowerCase().includes('puzzle.txt') ||
+                                    fileData.filePath.toLowerCase().includes('decoder.txt') ||
+                                    fileData.filePath.toLowerCase().includes('final.txt') ||
+                                    fileData.filePath.toLowerCase().includes('master.txt') ||
+                                    fileData.filePath.toLowerCase().includes('~temp.cache')
+                                )) {
+                                    showErrorDialog('Access Denied', 'CTF Challenge files cannot be accessed through File Manager. Use the Terminal to view their contents!');
+                                    return;
+                                }
+                                app.openWindow(fileData.action);
+                                // If it's a notepad file, load the content after window opens
+                                if (fileData.action === 'notepad' && fileData.filePath) {
+                                    setTimeout(() => {
+                                        this.loadFileInNotepad(fileData.filePath, fileData.name);
+                                    }, 100);
+                                }
+                                // If it's an image file, load the image after window opens
+                                if (fileData.action === 'imageviewer' && fileData.filePath) {
+                                    // Set pending file so initImageViewer knows not to load default
+                                    app.pendingImageFile = { path: fileData.filePath, name: fileData.name };
+                                    setTimeout(() => {
+                                        this.loadFileInImageViewer(fileData.filePath, fileData.name);
+                                        delete app.pendingImageFile;
+                                    }, 100);
+                                }
+                            };
                         }
 
                         if (path === currentPath) {
@@ -1724,6 +2416,12 @@
                 };
 
                 this.openFolder = (path) => {
+                    // Check if trying to access CTF folder - only CTF folders in Users are blocked
+                    if (path.toLowerCase().includes('ctf')) {
+                        showErrorDialog('Access Denied', 'The CTF folder is protected and cannot be accessed through File Manager. Use the Terminal to explore the CTF challenges!');
+                        return;
+                    }
+
                     currentPath = path;
                     const mainArea = content.querySelector('.filemanager-main');
                     const pathDisplay = content.querySelector('.filemanager-path');
@@ -1810,7 +2508,36 @@
                                 }
                             };
                         } else if (action) {
-                            fileDiv.onclick = () => app.openWindow(action);
+                            fileDiv.onclick = () => {
+                                // Check if trying to access protected CTF/Challenge files
+                                if (item.filePath && (
+                                    item.filePath.toLowerCase().includes('ctf') ||
+                                    item.filePath.toLowerCase().includes('puzzle.txt') ||
+                                    item.filePath.toLowerCase().includes('decoder.txt') ||
+                                    item.filePath.toLowerCase().includes('final.txt') ||
+                                    item.filePath.toLowerCase().includes('master.txt') ||
+                                    item.filePath.toLowerCase().includes('~temp.cache')
+                                )) {
+                                    showErrorDialog('Access Denied', 'CTF Challenge files cannot be accessed through File Manager. Use the Terminal to view their contents!');
+                                    return;
+                                }
+                                app.openWindow(action);
+                                // If it's a notepad file, load the content after window opens
+                                if (action === 'notepad' && item.filePath) {
+                                    setTimeout(() => {
+                                        self.loadFileInNotepad(item.filePath, item.name);
+                                    }, 100);
+                                }
+                                // If it's an image file, load the image after window opens
+                                if (action === 'imageviewer' && item.filePath) {
+                                    // Set pending file so initImageViewer knows not to load default
+                                    app.pendingImageFile = { path: item.filePath, name: item.name };
+                                    setTimeout(() => {
+                                        self.loadFileInImageViewer(item.filePath, item.name);
+                                        delete app.pendingImageFile;
+                                    }, 100);
+                                }
+                            };
                         }
 
                         mainArea.appendChild(fileDiv);
@@ -1840,7 +2567,6 @@
                         { internalPath: 'C', displayPath: 'C:\\' },
                         { internalPath: 'C-Users', displayPath: 'C:\\Users' },
                         { internalPath: 'C-Users-' + PROFILE.name.split(' ')[0], displayPath: 'C:\\Users\\' + PROFILE.name.split(' ')[0] },
-                        { internalPath: 'C-Users-' + PROFILE.name.split(' ')[0] + '-Portfolio', displayPath: 'C:\\Users\\' + PROFILE.name.split(' ')[0] + '\\Portfolio' },
                         { internalPath: 'C-ProgramFiles', displayPath: 'C:\\Program Files' },
                         { internalPath: 'C-ProgramFiles-Applications', displayPath: 'C:\\Program Files\\Applications' },
                         { internalPath: 'C-System', displayPath: 'C:\\System' }
@@ -1959,27 +2685,30 @@
                 resizeHandle.className = 'filemanager-resize-handle';
                 treeContainer.appendChild(resizeHandle);
 
-                // Add drag-to-resize functionality
+                // Add drag-to-resize functionality (scoped to this instance)
                 let isResizing = false;
-                resizeHandle.addEventListener('mousedown', (e) => {
-                    isResizing = true;
-                    e.preventDefault();
-                });
-
-                document.addEventListener('mousemove', (e) => {
+                const handleMouseMove = (e) => {
                     if (!isResizing) return;
-
                     const filemanagerContent = content.querySelector('.filemanager-content');
                     const newWidth = e.clientX - filemanagerContent.getBoundingClientRect().left;
-
                     // Min width 150px, max width 600px
                     if (newWidth >= 150 && newWidth <= 600) {
                         treeContainer.style.width = newWidth + 'px';
                     }
-                });
+                };
 
-                document.addEventListener('mouseup', () => {
+                const handleMouseUp = () => {
+                    if (!isResizing) return;
                     isResizing = false;
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', handleMouseUp);
+                };
+
+                resizeHandle.addEventListener('mousedown', (e) => {
+                    isResizing = true;
+                    e.preventDefault();
+                    document.addEventListener('mousemove', handleMouseMove);
+                    document.addEventListener('mouseup', handleMouseUp);
                 });
 
                 // Initial sidebar build and open C:\ to set up navigation history
@@ -1989,6 +2718,226 @@
                 app.windows.filemanager = this;
             }
 
+            loadFileInNotepad(filePath, fileName) {
+                // Build the full path for file lookup
+                const userName = PROFILE.name.split(' ')[0];
+                const userPath = `C:\\Users\\${userName}`;
+
+                // Try different path variants
+                let possiblePaths = [];
+
+                // If path starts with System, it's under C:\System
+                if (filePath.toLowerCase().startsWith('system')) {
+                    possiblePaths.push(`C:\\${filePath}`);
+                } else if (filePath.toLowerCase().startsWith('ctf') || filePath.toLowerCase().startsWith('images') || filePath.toLowerCase().startsWith('resume')) {
+                    // CTF, images, and resume are now under Steven folder
+                    possiblePaths.push(`${userPath}\\${filePath}`);
+                } else {
+                    // Otherwise assume it's a System path
+                    possiblePaths.push(`C:\\${filePath}`);
+                }
+
+                // Get the notepad window if it exists
+                const notepadWindow = document.querySelector('[data-type="notepad"]');
+                if (notepadWindow) {
+                    const contentArea = notepadWindow.querySelector('#notepadContent');
+                    const titleSpan = notepadWindow.querySelector('#notepadTitle');
+                    const filePathSpan = notepadWindow.querySelector('#notepadFilePath');
+                    const statsSpan = notepadWindow.querySelector('#notepadStats');
+
+                    let matchingKey = null;
+                    let fileContent = null;
+
+                    // First try global file contents (always available)
+                    const globalKeys = Object.keys(app.globalFileContents);
+                    for (let possiblePath of possiblePaths) {
+                        matchingKey = globalKeys.find(key => key.toLowerCase() === possiblePath.toLowerCase());
+                        if (matchingKey) {
+                            fileContent = app.globalFileContents[matchingKey];
+                            break;
+                        }
+                    }
+
+                    // If not found in global, try terminal's fileContents if available
+                    if (!fileContent && app.windows.terminal && app.windows.terminal.terminalState) {
+                        const terminalKeys = Object.keys(app.windows.terminal.terminalState.fileContents);
+                        for (let possiblePath of possiblePaths) {
+                            matchingKey = terminalKeys.find(key => key.toLowerCase() === possiblePath.toLowerCase());
+                            if (matchingKey) {
+                                fileContent = app.windows.terminal.terminalState.fileContents[matchingKey];
+                                break;
+                            }
+                        }
+                    }
+
+                    if (fileContent) {
+                        contentArea.value = fileContent;
+                        titleSpan.textContent = fileName;
+                        filePathSpan.textContent = filePath;
+                        statsSpan.textContent = fileContent.length + ' characters';
+                    } else {
+                        contentArea.value = 'File content not found.';
+                        titleSpan.textContent = fileName + ' (Not Found)';
+                        filePathSpan.textContent = filePath;
+                        statsSpan.textContent = '0 characters';
+                    }
+                }
+            }
+
+            initImageViewer(content) {
+                // Define all images
+                const allImages = [
+                    { name: 'profile.jpeg', path: 'images/profile.jpeg' },
+                    { name: 'Steven and Isabella Disney.jpg', path: 'images/Steven and Isabella Disney.jpg' },
+                    { name: 'Steven and Isabella Event.jpg', path: 'images/Steven and Isabella Event.jpg' },
+                    { name: 'Steven and Isabella Fair.jpg', path: 'images/Steven and Isabella Fair.jpg' },
+                    { name: 'Steven and Isabella Rodeo.jpg', path: 'images/Steven and Isabella Rodeo.jpg' }
+                ];
+
+                // Get DOM elements
+                const imgElement = content.querySelector('#viewerImage');
+                const infoSpan = content.querySelector('#imageInfo');
+                const counterSpan = content.querySelector('#imageCounter');
+                const prevBtn = content.querySelector('#prevImageBtn');
+                const nextBtn = content.querySelector('#nextImageBtn');
+                const imageViewerWindow = content.closest('[data-type="imageviewer"]');
+
+                if (!imgElement || !counterSpan || !prevBtn || !nextBtn) return;
+
+                // Initialize state with all images and default to first image
+                const loadImage = (index) => {
+                    if (index >= 0 && index < allImages.length) {
+                        imgElement.src = allImages[index].path;
+                        imgElement.alt = allImages[index].name;
+                        if (infoSpan) infoSpan.textContent = allImages[index].name;
+                        counterSpan.textContent = (index + 1) + ' / ' + allImages.length;
+
+                        if (imageViewerWindow) {
+                            imageViewerWindow.imageState = {
+                                allImages: allImages,
+                                currentIndex: index
+                            };
+                        }
+
+                        // Update button states
+                        prevBtn.disabled = index === 0;
+                        nextBtn.disabled = index === allImages.length - 1;
+                        prevBtn.style.opacity = index === 0 ? '0.5' : '1';
+                        nextBtn.style.opacity = index === allImages.length - 1 ? '0.5' : '1';
+                        prevBtn.style.cursor = index === 0 ? 'not-allowed' : 'pointer';
+                        nextBtn.style.cursor = index === allImages.length - 1 ? 'not-allowed' : 'pointer';
+                    }
+                };
+
+                // Set up button click handlers
+                prevBtn.onclick = () => {
+                    if (imageViewerWindow && imageViewerWindow.imageState) {
+                        if (imageViewerWindow.imageState.currentIndex > 0) {
+                            loadImage(imageViewerWindow.imageState.currentIndex - 1);
+                        }
+                    }
+                };
+
+                nextBtn.onclick = () => {
+                    if (imageViewerWindow && imageViewerWindow.imageState) {
+                        if (imageViewerWindow.imageState.currentIndex < allImages.length - 1) {
+                            loadImage(imageViewerWindow.imageState.currentIndex + 1);
+                        }
+                    }
+                };
+
+                // Load default image only if no file is pending to be loaded
+                if (!app.pendingImageFile) {
+                    loadImage(0);
+                }
+            }
+
+            loadFileInImageViewer(filePath, fileName) {
+                // Get the image viewer window if it exists
+                const imageViewerWindow = document.querySelector('[data-type="imageviewer"]');
+                if (imageViewerWindow) {
+                    const imgElement = imageViewerWindow.querySelector('#viewerImage');
+                    const infoSpan = imageViewerWindow.querySelector('#imageInfo');
+                    const counterSpan = imageViewerWindow.querySelector('#imageCounter');
+                    const prevBtn = imageViewerWindow.querySelector('#prevImageBtn');
+                    const nextBtn = imageViewerWindow.querySelector('#nextImageBtn');
+
+                    // Get all images from the images folder
+                    const allImages = [
+                        { name: 'profile.jpeg', path: 'images/profile.jpeg' },
+                        { name: 'Steven and Isabella Disney.jpg', path: 'images/Steven and Isabella Disney.jpg' },
+                        { name: 'Steven and Isabella Event.jpg', path: 'images/Steven and Isabella Event.jpg' },
+                        { name: 'Steven and Isabella Fair.jpg', path: 'images/Steven and Isabella Fair.jpg' },
+                        { name: 'Steven and Isabella Rodeo.jpg', path: 'images/Steven and Isabella Rodeo.jpg' }
+                    ];
+
+                    // Find current image index
+                    let currentIndex = allImages.findIndex(img => img.path === filePath);
+                    if (currentIndex === -1) {
+                        currentIndex = allImages.findIndex(img => img.name === fileName);
+                    }
+                    if (currentIndex === -1) currentIndex = 0;
+
+                    // Store state on window object
+                    imageViewerWindow.imageState = {
+                        allImages: allImages,
+                        currentIndex: currentIndex
+                    };
+
+                    // Remove old event listeners by cloning buttons
+                    const newPrevBtn = prevBtn.cloneNode(true);
+                    const newNextBtn = nextBtn.cloneNode(true);
+                    prevBtn.parentNode.replaceChild(newPrevBtn, prevBtn);
+                    nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
+
+                    // Get updated button references
+                    const updatedPrevBtn = imageViewerWindow.querySelector('#prevImageBtn');
+                    const updatedNextBtn = imageViewerWindow.querySelector('#nextImageBtn');
+
+                    // Load the image
+                    const loadImage = (index) => {
+                        if (index >= 0 && index < allImages.length) {
+                            imgElement.src = allImages[index].path;
+                            imgElement.alt = allImages[index].name;
+                            infoSpan.textContent = allImages[index].name;
+                            counterSpan.textContent = (index + 1) + ' / ' + allImages.length;
+                            imageViewerWindow.imageState.currentIndex = index;
+                            imgElement.style.display = 'block';
+
+                            // Update button states
+                            updatedPrevBtn.disabled = index === 0;
+                            updatedNextBtn.disabled = index === allImages.length - 1;
+                            updatedPrevBtn.style.opacity = index === 0 ? '0.5' : '1';
+                            updatedNextBtn.style.opacity = index === allImages.length - 1 ? '0.5' : '1';
+                            updatedPrevBtn.style.cursor = index === 0 ? 'not-allowed' : 'pointer';
+                            updatedNextBtn.style.cursor = index === allImages.length - 1 ? 'not-allowed' : 'pointer';
+                        }
+                    };
+
+                    // Add new event listeners
+                    updatedPrevBtn.onclick = () => {
+                        if (imageViewerWindow.imageState.currentIndex > 0) {
+                            loadImage(imageViewerWindow.imageState.currentIndex - 1);
+                        }
+                    };
+
+                    updatedNextBtn.onclick = () => {
+                        if (imageViewerWindow.imageState.currentIndex < allImages.length - 1) {
+                            loadImage(imageViewerWindow.imageState.currentIndex + 1);
+                        }
+                    };
+
+                    // Load the initial image
+                    loadImage(currentIndex);
+                }
+            }
+
+            initNotepad(content) {
+                // Notepad initialization - nothing special needed yet
+                // The file loading is handled by loadFileInNotepad()
+                app.windows.notepad = this;
+            }
+
             updateTerminalPrompt(content) {
                 if (this.terminalPromptSpan) {
                     this.terminalPromptSpan.textContent = this.terminalState.currentDir + '>';
@@ -1996,8 +2945,10 @@
             }
 
             buildTreeStructure(dirPath, prefix = '', isLast = true) {
-                const items = this.terminalState.fileSystem[dirPath] || [];
-                if (items.length === 0) return '';
+                // Use case-insensitive lookup to find the exact path
+                const exactDirPath = this.getFileSystemPath(dirPath);
+                const items = exactDirPath ? this.terminalState.fileSystem[exactDirPath] : [];
+                if (!items || items.length === 0) return '';
 
                 let result = '';
                 items.forEach((item, index) => {
@@ -2008,9 +2959,11 @@
                     result += currentPrefix + item + '\n';
 
                     // Check if this item is a directory (has subdirectories in fileSystem)
-                    const itemPath = dirPath + '\\' + item;
-                    if (this.terminalState.fileSystem[itemPath]) {
-                        result += this.buildTreeStructure(itemPath, nextPrefix, isLastItem);
+                    // Build the potential path and use case-insensitive lookup
+                    const potentialPath = exactDirPath.endsWith('\\') ? exactDirPath + item : exactDirPath + '\\' + item;
+                    const exactItemPath = this.getFileSystemPath(potentialPath);
+                    if (exactItemPath) {
+                        result += this.buildTreeStructure(exactItemPath, nextPrefix, isLastItem);
                     }
                 });
 
@@ -2127,6 +3080,35 @@
                 }
             }
 
+            findPathInFileSystem(basePath, folderName) {
+                // Find the correct capitalization of a path in the fileSystem
+                const baseContents = this.terminalState.fileSystem[basePath] || [];
+                if (!baseContents) return null;
+
+                // Case-insensitive search in the directory contents
+                const found = baseContents.find(item => item.toLowerCase() === folderName.toLowerCase());
+                if (found) {
+                    // Check if this is a folder (exists in fileSystem keys)
+                    const potentialPath = basePath.endsWith('\\') ? basePath + found : basePath + '\\' + found;
+                    if (this.terminalState.fileSystem[potentialPath]) {
+                        return potentialPath;
+                    }
+                }
+                return null;
+            }
+
+            getFileSystemPath(inputPath) {
+                // Find the exact path in fileSystem (case-insensitive)
+                // First try exact match
+                if (this.terminalState.fileSystem[inputPath]) {
+                    return inputPath;
+                }
+
+                // Try case-insensitive match
+                const allKeys = Object.keys(this.terminalState.fileSystem);
+                return allKeys.find(key => key.toLowerCase() === inputPath.toLowerCase()) || null;
+            }
+
             handleTerminalCommand(cmd, content) {
                 const output = content.querySelector('#terminalOutput');
 
@@ -2134,31 +3116,71 @@
                 if (!this.terminalState) {
                     // Build file system paths dynamically from PROFILE
                     const userName = PROFILE.name.split(' ')[0]; // First name for path
-                    const basePath = `C:\\Users\\${userName}\\Portfolio`;
+                    const userPath = `C:\\Users\\${userName}`;
                     const resumeFile = PROFILE.resume.filename;
+
+                    // Build fileSystem with title case paths for display
+                    const fileSystemRaw = {
+                        // Root and main drives
+                        'C:\\': ['Users', 'Program Files', 'System'],
+
+                        // Users structure
+                        'C:\\Users': [userName],
+                        [userPath]: ['images', 'resume', 'ctf'],
+                        [`${userPath}\\images`]: ['profile.jpeg', 'Steven and Isabella Disney.jpg', 'Steven and Isabella Event.jpg', 'Steven and Isabella Fair.jpg', 'Steven and Isabella Rodeo.jpg'],
+                        [`${userPath}\\resume`]: [resumeFile],
+                        [`${userPath}\\ctf`]: ['challenges', 'hints.txt', 'CTF_Rules.txt'],
+                        [`${userPath}\\ctf\\challenges`]: ['level1', 'level2'],
+                        [`${userPath}\\ctf\\challenges\\level1`]: ['README.txt', 'secret.txt'],
+                        [`${userPath}\\ctf\\challenges\\level2`]: ['advanced.txt', 'flag.txt'],
+
+                        // Program Files structure
+                        'C:\\Program Files': ['Applications'],
+                        'C:\\Program Files\\Applications': ['Tools', 'Utilities', 'Settings.ini'],
+                        'C:\\Program Files\\Applications\\Tools': ['Password Generator', 'Base64 Decoder', 'To-Do List', 'Image Viewer'],
+                        'C:\\Program Files\\Applications\\Utilities': ['Terminal', 'Calculator'],
+
+                        // System folder
+                        'C:\\System': ['drivers', 'config', 'etc', 'appdata', 'settings.ini', 'config.sys'],
+                        'C:\\System\\drivers': ['network', 'storage'],
+                        'C:\\System\\drivers\\network': ['ethernet.sys', 'wifi.sys', 'puzzle.txt', 'decoder.txt'],
+                        'C:\\System\\drivers\\storage': ['disk.sys', 'usb.sys'],
+                        'C:\\System\\config': ['boot.ini', 'registry.dat'],
+                        'C:\\System\\etc': ['hosts', 'services', 'protocols'],
+                        'C:\\System\\appdata': ['local'],
+                        'C:\\System\\appdata\\local': ['temp', 'cache'],
+                        'C:\\System\\appdata\\local\\temp': ['~temp.cache'],
+                        'C:\\System\\appdata\\local\\cache': ['app.cache', 'final.txt', 'master.txt']
+                    };
 
                     this.terminalState = {
                         history: [],
-                        currentDir: basePath,
-                        fileSystem: {
-                            [basePath]: ['index.html', 'styles.css', 'script.js', 'images', 'resume', 'ctf', 'system'],
-                            [`${basePath}\\images`]: ['profile.jpeg'],
-                            [`${basePath}\\resume`]: [resumeFile],
-                            [`${basePath}\\ctf`]: ['challenges', 'hints.txt'],
-                            [`${basePath}\\ctf\\challenges`]: ['level1', 'level2'],
-                            [`${basePath}\\ctf\\challenges\\level1`]: ['README.txt', 'secret.txt'],
-                            [`${basePath}\\ctf\\challenges\\level2`]: ['advanced.txt'],
-                            [`${basePath}\\system`]: ['appdata'],
-                            [`${basePath}\\system\\appdata`]: ['local'],
-                            [`${basePath}\\system\\appdata\\local`]: ['temp'],
-                            [`${basePath}\\system\\appdata\\local\\temp`]: ['~temp.cache']
-                        },
+                        currentDir: userPath,
+                        fileSystem: fileSystemRaw,
                         fileContents: {
-                            [`${basePath}\\ctf\\hints.txt`]: 'CTF Challenge Started!\nHint: Explore the challenges directory...\nLook for hidden secrets in level1!',
-                            [`${basePath}\\ctf\\challenges\\level1\\README.txt`]: 'Level 1: The Beginning\n\nYou have found the first level of our CTF challenge.\nYour goal: Find the flag hidden in this directory.\n\nTry looking at all files with the type command!',
-                            [`${basePath}\\ctf\\challenges\\level1\\secret.txt`]: 'FLAG{y0u_f0und_the_f1rst_fl4g_ctf_secr3t_easter_egg}',
-                            [`${basePath}\\ctf\\challenges\\level2\\advanced.txt`]: 'Level 2: Advanced Challenge\n\nCongratulations on finding level 1!\nLevel 2 requires deeper exploration...\n\nHint: Not all secrets are where you expect them. Explore the entire filesystem...',
-                            [`${basePath}\\system\\appdata\\local\\temp\\~temp.cache`]: 'RkxBR3t0ZW1wX2NhY2hlX2gxZGRlbl80ZHY0bmNlZF9zM2NyM3RzX3dpdGhpbn0='
+                            [`${userPath}\\ctf\\hints.txt`]: 'CTF Challenge Started!\nHint: Explore the challenges directory...\nLook for hidden secrets in level1!',
+                            [`${userPath}\\ctf\\challenges\\level1\\README.txt`]: 'Level 1: The Beginning\n\nYou have found the first level of our CTF challenge.\nYour goal: Find the flag hidden in this directory.\n\nTry looking at all files with the type command!',
+                            [`${userPath}\\ctf\\challenges\\level1\\secret.txt`]: 'FLAG{y0u_f0und_the_f1rst_fl4g_ctf_secr3t_easter_egg}',
+                            [`${userPath}\\ctf\\challenges\\level2\\advanced.txt`]: 'Level 2: Advanced Challenge\n\nCongratulations on finding level 1!\nLevel 2 requires deeper exploration...\n\nHint: Not all secrets are where you expect them. Explore the entire filesystem...',
+                            [`${userPath}\\ctf\\challenges\\level2\\flag.txt`]: 'FLAG{y0u_m4st3r_th3_f1l3syst3m_n4v1g4t10n}',
+                            [`${userPath}\\ctf\\CTF_Rules.txt`]: 'CAPTURE THE FLAG - RULES & GUIDELINES\n======================================\n\n1. OBJECTIVE:\n   Find hidden flags scattered throughout the filesystem.\n   Each flag has a unique format: FLAG{...}\n   Complete all 4 levels to master this CTF!\n   Plus: Find the bonus hidden flag!\n\n2. RULES:\n   - Use the Terminal to navigate the filesystem\n   - The File Manager cannot access challenge files (Access Denied)\n   - You must use terminal commands like: cd, dir, type, ls\n   - Files are visible in explorer but cannot be opened there\n   - Each level increases in difficulty\n\n3. AVAILABLE COMMANDS:\n   dir        - List directory contents\n   cd <path>  - Change directory\n   type <file>- Display file contents\n   help       - Show available commands\n\n4. LEVEL PROGRESSION:\n   Level 1: Easy - Basic flag in user\'s ctf folder\n   Level 2: Medium - Flag requires filesystem exploration\n   Level 3: Hard - Decryption challenge with ROT13 cipher\n   Level 4: Master - Combines knowledge from all previous levels\n\n5. CHALLENGE LOCATION RIDDLES:\n\n   Level 1 & 2: Start with: cd C:\\\\Users\\\\Steven\\\\ctf\n\n   Level 3: "Seek where the electrons dance, in the mechanical\n            minds that bridge the distance. Look for puzzle and\n            decoder in the depths where devices speak."\n\n   Level 4: "Where memories are kept in the dark, hidden beneath\n            layers of application whispers. Find final and master\n            in the storage of forgotten data."\n\n   BONUS: "In the realm of the temporary, where data sleeps\n          briefly before vanishing. Deeper still lies a secret\n          cache file, waiting in the shadows of fleeting storage."\n\n6. EXPLORATION HINTS:\n   - Start with: cd C:\\\\Users\\\\Steven\\\\ctf\n   - Each level has multiple files - read them all carefully\n   - Level 3 requires decoding: Use ROT13 algorithm\n   - Level 4 is the ultimate test combining all skills\n   - System folders are the key to advanced levels\n   - Explore the System directory structure thoroughly\n   - The deepest secrets hide in the most obscure paths\n\n7. SUCCESS:\n   Find all 4 flags + 1 bonus flag!\n   Compile your answers and prove you\'ve conquered all levels!\n   Good luck!',
+                            ['C:\\System\\drivers\\network\\puzzle.txt']: 'Level 3: The Puzzle\n\nYou\'ve made it this far! Great job.\nThis level requires you to piece together clues.\n\nRead both puzzle.txt and decoder.txt\nCombine the information to find the flag.\n\nHint: Check the other file in this directory!',
+                            ['C:\\System\\drivers\\network\\decoder.txt']: 'Decoder Key:\n\nROT13 Cipher Implementation:\nA->N, B->O, C->P ... M->Z\nN->A, O->B, P->C ... Z->M\n\nYour Encrypted Flag:\nSYNT{e0g13_q3p0q3e_z4f03e}\n\nDecode this message using ROT13 to find the flag!\nHint: Apply ROT13 to each letter (numbers and symbols stay the same)',
+                            ['C:\\System\\appdata\\local\\cache\\final.txt']: 'Level 4: The Final Challenge\n\nThis is the most advanced level.\nBoth final.txt and master.txt contain pieces of the answer.\n\nYou must combine knowledge from all previous levels.\nThe flag format remains the same: FLAG{...}\n\nUse all the tools available to you:\n- Terminal commands\n- File exploration\n- Pattern recognition',
+                            ['C:\\System\\appdata\\local\\cache\\master.txt']: 'Master Key:\n\nThe final flag requires combining:\n1. Decryption knowledge from Level 3\n2. Filesystem exploration skills\n3. Pattern recognition from all levels\n\nFinal Hint: FLAG{m4st3r_ctf_pl4y3r_c0mpl3t3d}\n\nThis flag proves you\'ve completed all levels!\nCongratulations!',
+                            ['C:\\System\\appdata\\local\\temp\\~temp.cache']: 'RkxBR3t0ZW1wX2NhY2hlX2gxZGRlbl80ZHY0bmNlZV9zM2NyM3RzX3dpdGhpbn0=',
+                            ['C:\\System\\appdata\\local\\cache\\app.cache']: '[AppCache]\nVersion=2.1\nLastUpdate=2025-01-15\nCacheSize=256MB\nCompressionEnabled=true\nAutoClean=false',
+                            ['C:\\System\\settings.ini']: '[System]\nBuildNumber=19045\nKernelVersion=10.0.19045\nBootOption=Normal\nDebugMode=false\nRestorePoints=5',
+                            ['C:\\System\\config.sys']: 'DEVICE=C:\\System\\drivers\\storage\\disk.sys\nDEVICE=C:\\System\\drivers\\network\\ethernet.sys\nFILES=255\nBUFFERS=30,0\nDOS=HIGH,UMB',
+                            ['C:\\System\\drivers\\network\\ethernet.sys']: 'Ethernet Device Driver\nVersion: 4.2.1.0\nManufacturer: Intel Corporation\nDeviceID: PCI\\VEN_8086&DEV_1539\nDriver Status: Active',
+                            ['C:\\System\\drivers\\network\\wifi.sys']: 'Wireless Network Driver\nVersion: 23.1.2.0\nManufacturer: MediaTek\nDeviceID: PCI\\VEN_14C3&DEV_7961\nDriver Status: Active',
+                            ['C:\\System\\drivers\\storage\\disk.sys']: 'Disk Storage Driver\nVersion: 10.0.19045.1\nManufacturer: Microsoft\nSupported: SATA, NVMe, SSD\nDriver Status: Active',
+                            ['C:\\System\\drivers\\storage\\usb.sys']: 'USB Mass Storage Driver\nVersion: 10.0.19045.0\nManufacturer: Microsoft\nUSB Version: 3.1\nDriver Status: Active',
+                            ['C:\\System\\config\\boot.ini']: '[boot loader]\ntimeout=30\ndefault=multi(0)disk(0)rdisk(0)partition(1)\\WINDOWS\n\n[operating systems]\nmulti(0)disk(0)rdisk(0)partition(1)\\WINDOWS="Windows" /fastdetect',
+                            ['C:\\System\\config\\registry.dat']: 'Windows Registry Editor Version 5.00\n\n[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion]\n"CurrentVersion"="10.0"\n"CurrentMajorVersionNumber"=dword:0000000a',
+                            ['C:\\System\\etc\\hosts']: '# Localhost entries\n127.0.0.1 localhost\n::1 localhost\n\n# Development entries\n127.0.0.1 local.dev\n127.0.0.1 api.local',
+                            ['C:\\System\\etc\\services']: '# Services\nftp 21/tcp\ntelnet 23/tcp\nsmtp 25/tcp\nhttp 80/tcp\nhttps 443/tcp\nmysql 3306/tcp',
+                            ['C:\\System\\etc\\protocols']: '# IP Protocols\nip 0\nicmp 1\nigmp 2\nggp 3\nip-encap 4\nst 5\ntcp 6\ncbp 7\nugp 17'
                         }
                     };
                 }
@@ -2270,6 +3292,8 @@ OTHER:
                     addMessage(PROFILE.terminalCommands.contact);
                 } else if (command === 'whoami') {
                     addMessage(PROFILE.terminalCommands.whoami);
+                } else if (command === 'ipconfig') {
+                    addMessage(PROFILE.terminalCommands.ipconfig);
                 } else if (command === 'portfolio') {
                     addMessage(`Portfolio Version ${PROFILE.system.portfolioVersion} | Build ${PROFILE.system.buildNumber}\nStatus: All Systems Operational ✓`);
                 } else if (command === 'date') {
@@ -2289,17 +3313,19 @@ OTHER:
    ::' /  \\ /  \\/::::::::::'
       /    \\/   \\
 
-${userName}-portfolio
+${userName}@steven
 ├─ OS: Windows 11 (Virtual)
 ├─ Kernel: HTML5/CSS3/JavaScript
 ├─ Terminal: Custom Built
-├─ Shell: Portfolio CLI v2.0
+├─ Shell: Steven CLI v2.0
 ├─ CPU: Multi-core
 ├─ RAM: Available
 └─ Uptime: Always On`);
                 } else if (command === 'ls' || command === 'dir') {
                     const dir = this.terminalState.currentDir;
-                    const files = this.terminalState.fileSystem[dir];
+                    // Use case-insensitive lookup to find the path in fileSystem
+                    const exactPath = this.getFileSystemPath(dir);
+                    const files = exactPath ? this.terminalState.fileSystem[exactPath] : null;
                     if (files) {
                         if (command === 'dir') {
                             // Windows-style dir output
@@ -2314,8 +3340,24 @@ ${userName}-portfolio
                     if (!args) {
                         addMessage('Usage: type [filename]');
                     } else {
-                        const filePath = this.terminalState.currentDir + '\\' + args;
-                        const contents = this.terminalState.fileContents[filePath];
+                        const expectedPath = this.terminalState.currentDir.endsWith('\\') ?
+                            this.terminalState.currentDir + args :
+                            this.terminalState.currentDir + '\\' + args;
+
+                        // Try exact match first
+                        let contents = this.terminalState.fileContents[expectedPath];
+
+                        // If not found, try case-insensitive lookup
+                        if (contents === undefined) {
+                            const allKeys = Object.keys(this.terminalState.fileContents);
+                            const matchingKey = allKeys.find(key =>
+                                key.toLowerCase() === expectedPath.toLowerCase()
+                            );
+                            if (matchingKey) {
+                                contents = this.terminalState.fileContents[matchingKey];
+                            }
+                        }
+
                         if (contents !== undefined) {
                             addMessage(contents);
                         } else {
@@ -2323,61 +3365,68 @@ ${userName}-portfolio
                         }
                     }
                 } else if (command === 'tree') {
-                    const treeOutput = this.terminalState.currentDir + '\n' + this.buildTreeStructure(this.terminalState.currentDir);
-                    addMessage(treeOutput);
+                    // Use case-insensitive lookup to find the path in fileSystem
+                    const exactPath = this.getFileSystemPath(this.terminalState.currentDir);
+                    if (exactPath) {
+                        const treeOutput = this.terminalState.currentDir + '\n' + this.buildTreeStructure(exactPath);
+                        addMessage(treeOutput);
+                    } else {
+                        addMessage('Directory not found.');
+                    }
                 } else if (command === 'pwd') {
                     addMessage(this.terminalState.currentDir);
                 } else if (command === 'cd..' || (command === 'cd' && args === '..')) {
                     // Go up one directory (handles both 'cd..' and 'cd ..')
-                    // Check if at Portfolio root (built from PROFILE)
-                    const userName = PROFILE.name.split(' ')[0];
-                    const basePath = `C:\\Users\\${userName}\\Portfolio`;
-                    if (this.terminalState.currentDir === basePath) {
-                        addMessage('Access Denied.');
-                        // Trigger shake animation
-                        const windowEl = content.closest('.window');
-                        if (windowEl) {
-                            windowEl.classList.add('shake');
-                            setTimeout(() => windowEl.classList.remove('shake'), 500);
+                    const pathParts = this.terminalState.currentDir.split('\\');
+                    if (pathParts.length > 1) {
+                        pathParts.pop();
+                        let newPath = pathParts.join('\\');
+
+                        // Handle empty path or C: (when going from single level, e.g., C:\Users -> C:\)
+                        if (!newPath || newPath === 'C:') newPath = 'C:\\';
+
+                        // Use case-insensitive lookup
+                        const exactPath = this.getFileSystemPath(newPath);
+                        if (exactPath) {
+                            this.terminalState.currentDir = exactPath;
+                            this.updateTerminalPrompt(content);
+                            addMessage('');
+                        } else {
+                            addMessage(`Cannot find path: ${newPath}`);
                         }
                     } else {
-                        const pathParts = this.terminalState.currentDir.split('\\');
-                        if (pathParts.length > 1) {
-                            pathParts.pop();
-                            const newPath = pathParts.join('\\');
-                            if (this.terminalState.fileSystem[newPath]) {
-                                this.terminalState.currentDir = newPath;
-                                this.updateTerminalPrompt(content);
-                                addMessage('');
-                            } else {
-                                addMessage(`Cannot find path: ${newPath}`);
-                            }
-                        } else {
-                            addMessage('Cannot go above root directory');
-                        }
+                        addMessage('Cannot go above root directory');
                     }
                 } else if (command === 'cd') {
                     if (!args) {
                         addMessage('Usage: cd [directory]');
                     } else {
-                        // Check if trying to navigate to restricted paths
                         const argsLower = args.toLowerCase();
-                        if (argsLower === 'c:\\' || argsLower === 'c:') {
-                            addMessage('Access Denied.');
-                            // Trigger shake animation
-                            const windowEl = content.closest('.window');
-                            if (windowEl) {
-                                windowEl.classList.add('shake');
-                                setTimeout(() => windowEl.classList.remove('shake'), 500);
-                            }
-                        } else {
-                            const newPath = this.terminalState.currentDir + '\\' + args;
-                            if (this.terminalState.fileSystem[newPath]) {
-                                this.terminalState.currentDir = newPath;
+                        let newPath = args;
+
+                        // Handle absolute paths (C:\, C:\Users, etc.)
+                        if (argsLower.startsWith('c:\\') || argsLower.startsWith('c:')) {
+                            newPath = args === 'C:' ? 'C:\\' : args;
+
+                            // Try to find the exact path using case-insensitive lookup
+                            const exactPath = this.getFileSystemPath(newPath);
+                            if (exactPath) {
+                                this.terminalState.currentDir = exactPath;
                                 this.updateTerminalPrompt(content);
                                 addMessage('');
                             } else {
+                                // Path not found
                                 addMessage(`Cannot find path: ${newPath}`);
+                            }
+                        } else {
+                            // Handle relative paths - use case-insensitive lookup
+                            const foundPath = this.findPathInFileSystem(this.terminalState.currentDir, args);
+                            if (foundPath) {
+                                this.terminalState.currentDir = foundPath;
+                                this.updateTerminalPrompt(content);
+                                addMessage('');
+                            } else {
+                                addMessage(`Cannot find path: ${args}`);
                             }
                         }
                     }
@@ -2391,10 +3440,60 @@ ${userName}-portfolio
                     addMessage(args || '');
                 } else if (command === 'calc') {
                     try {
-                        const result = eval(args.replace(/[^0-9+\-*/().]/g, ''));
+                        // Safe expression evaluator (no eval())
+                        const safeEvaluate = (expr) => {
+                            expr = expr.replace(/×/g, '*').replace(/−/g, '-');
+                            if (!/^[0-9+\-*/.() ]*$/.test(expr)) {
+                                throw new Error('Invalid characters');
+                            }
+                            let pos = 0;
+                            const parseExpression = () => {
+                                let result = parseTerm();
+                                while (pos < expr.length && (expr[pos] === '+' || expr[pos] === '-')) {
+                                    const op = expr[pos++];
+                                    const right = parseTerm();
+                                    result = op === '+' ? result + right : result - right;
+                                }
+                                return result;
+                            };
+                            const parseTerm = () => {
+                                let result = parseFactor();
+                                while (pos < expr.length && (expr[pos] === '*' || expr[pos] === '/')) {
+                                    const op = expr[pos++];
+                                    const right = parseFactor();
+                                    if (op === '/' && right === 0) throw new Error('Division by zero');
+                                    result = op === '*' ? result * right : result / right;
+                                }
+                                return result;
+                            };
+                            const parseFactor = () => {
+                                while (pos < expr.length && expr[pos] === ' ') pos++;
+                                if (expr[pos] === '(') {
+                                    pos++;
+                                    const result = parseExpression();
+                                    if (expr[pos] !== ')') throw new Error('Missing )');
+                                    pos++;
+                                    return result;
+                                }
+                                if (expr[pos] === '-') {
+                                    pos++;
+                                    return -parseFactor();
+                                }
+                                let num = '';
+                                while (pos < expr.length && /[0-9.]/.test(expr[pos])) {
+                                    num += expr[pos++];
+                                }
+                                if (num === '') throw new Error('Expected number');
+                                return parseFloat(num);
+                            };
+                            const result = parseExpression();
+                            if (pos !== expr.length) throw new Error('Unexpected character');
+                            return result;
+                        };
+                        const result = safeEvaluate(args);
                         addMessage(`${args} = ${result}`);
                     } catch (e) {
-                        addMessage('Invalid expression');
+                        addMessage('Invalid expression: ' + e.message);
                     }
                 } else if (command === 'joke') {
                     addMessage(jokes[Math.floor(Math.random() * jokes.length)]);
@@ -2503,6 +3602,12 @@ ${userName}-portfolio
                     addMessage('🎮 GUESS THE NUMBER\nThink of a number 1-100\nType: higher or lower to give hints\n(Not fully implemented - try other commands!)');
                 } else if (cmd) {
                     addMessage(`'${cmd}' is not recognized. Type 'help' for commands.`);
+                    // Add shake animation to terminal window
+                    const windowEl = content.closest('.window');
+                    if (windowEl) {
+                        windowEl.classList.add('shake');
+                        setTimeout(() => windowEl.classList.remove('shake'), 500);
+                    }
                 }
 
                 // Track command in history
@@ -2703,7 +3808,7 @@ ${userName}-portfolio
                         <div id="terminalContent" style="cursor: text;">
                             <div id="terminalOutput" style="margin-bottom: 10px;">
                                 <div class="terminal-output">Holtman Terminal v1.0</div>
-                                <div class="terminal-output">System: ${PROFILE.name} Portfolio</div>
+                                <div class="terminal-output">System: ${PROFILE.name}</div>
                                 <div class="terminal-output">&nbsp;</div>
                             </div>
                             <div class="terminal-input-line">
@@ -2754,110 +3859,49 @@ ${userName}-portfolio
                         </div>
                     `,
                     settings: `
-                        <h2>⚙️ System Settings</h2>
-                        
-                        <div class="settings-section">
-                            <h3>🎨 Appearance</h3>
-                            <label for="themeSelect">Desktop Theme</label>
-                            <select id="themeSelect">
-                                <option value="default">Default</option>
-                                <option value="sunset">Sunset Gradient</option>
-                                <option value="ocean">Ocean Gradient</option>
-                                <option value="cyberpunk">Cyberpunk Gradient</option>
-                                <option value="forest">Forest Gradient</option>
-                                <option value="dark">Dark Gradient</option>
-                            </select>
-                            <label for="opacitySlider">Background Opacity: <span id="opacityValue">100%</span></label>
-                            <input type="range" id="opacitySlider" min="0" max="100" value="100">
-                        </div>
+                        <div style="display: flex; flex-direction: column; height: 100%; background: linear-gradient(135deg, #f5f7fa 0%, #e9ecf1 100%);">
+                            <div id="settingsMainView" style="overflow-y: auto; padding: 20px; flex: 1;">
+                                <h1 style="margin: 0 0 20px 0; color: #333; font-size: 24px;">⚙️ Settings</h1>
+                                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
+                                    <div class="settings-category-icon" onclick="app.windows.settings.openCategory('display')">
+                                        <div style="font-size: 48px; margin-bottom: 8px;">🎨</div>
+                                        <div style="font-weight: 600; color: #333;">Display</div>
+                                    </div>
+                                    <div class="settings-category-icon" onclick="app.windows.settings.openCategory('sound')">
+                                        <div style="font-size: 48px; margin-bottom: 8px;">🔊</div>
+                                        <div style="font-weight: 600; color: #333;">Sound</div>
+                                    </div>
+                                    <div class="settings-category-icon" onclick="app.windows.settings.openCategory('network')">
+                                        <div style="font-size: 48px; margin-bottom: 8px;">🌐</div>
+                                        <div style="font-weight: 600; color: #333;">Network</div>
+                                    </div>
+                                    <div class="settings-category-icon" onclick="app.windows.settings.openCategory('system')">
+                                        <div style="font-size: 48px; margin-bottom: 8px;">💻</div>
+                                        <div style="font-weight: 600; color: #333;">System</div>
+                                    </div>
+                                    <div class="settings-category-icon" onclick="app.windows.settings.openCategory('accessibility')">
+                                        <div style="font-size: 48px; margin-bottom: 8px;">♿</div>
+                                        <div style="font-weight: 600; color: #333;">Accessibility</div>
+                                    </div>
+                                    <div class="settings-category-icon" onclick="app.windows.settings.openCategory('security')">
+                                        <div style="font-size: 48px; margin-bottom: 8px;">🔒</div>
+                                        <div style="font-weight: 600; color: #333;">Security</div>
+                                    </div>
+                                    <div class="settings-category-icon" onclick="app.windows.settings.openCategory('power')">
+                                        <div style="font-size: 48px; margin-bottom: 8px;">🔋</div>
+                                        <div style="font-weight: 600; color: #333;">Power</div>
+                                    </div>
+                                    <div class="settings-category-icon" onclick="app.windows.settings.openCategory('devices')">
+                                        <div style="font-size: 48px; margin-bottom: 8px;">🖱️</div>
+                                        <div style="font-weight: 600; color: #333;">Devices</div>
+                                    </div>
+                                </div>
+                            </div>
 
-                        <div class="settings-section">
-                            <h3>🔔 Notifications</h3>
-                            <div class="toggle-switch">
-                                <label for="notificationsToggle">Enable Desktop Notifications</label>
-                                <input type="checkbox" id="notificationsToggle" class="toggle-checkbox" checked>
+                            <div id="settingsDetailView" style="display: none; overflow-y: auto; padding: 20px; flex: 1;">
+                                <button onclick="app.windows.settings.backToMain()" style="margin-bottom: 15px; padding: 8px 12px; background: rgba(102, 126, 234, 0.2); border: 1px solid #667eea; border-radius: 6px; cursor: pointer; color: #667eea; font-weight: 600; font-size: 12px;">← Back</button>
+                                <div id="settingsCategoryContent"></div>
                             </div>
-                            <div class="toggle-switch">
-                                <label for="soundToggle">Sound Effects</label>
-                                <input type="checkbox" id="soundToggle" class="toggle-checkbox" checked>
-                            </div>
-                        </div>
-
-                        <div class="settings-section">
-                            <h3>⌨️ Behavior</h3>
-                            <div class="toggle-switch">
-                                <label for="animationsToggle">Enable Animations</label>
-                                <input type="checkbox" id="animationsToggle" class="toggle-checkbox" checked>
-                            </div>
-                            <div class="toggle-switch">
-                                <label for="startupToggle">Show Start Menu on Login</label>
-                                <input type="checkbox" id="startupToggle" class="toggle-checkbox" checked>
-                            </div>
-                        </div>
-
-                        <div class="settings-section">
-                            <h3>🖥️ Display Settings</h3>
-                            <label for="fontSizeSlider">Font Size: <span id="fontSizeValue">100%</span></label>
-                            <input type="range" id="fontSizeSlider" min="80" max="120" value="100">
-                            <div class="toggle-switch">
-                                <label for="blurToggle">Window Blur Effect</label>
-                                <input type="checkbox" id="blurToggle" class="toggle-checkbox" checked>
-                            </div>
-                            <div class="toggle-switch">
-                                <label for="contrastToggle">High Contrast Mode</label>
-                                <input type="checkbox" id="contrastToggle" class="toggle-checkbox">
-                            </div>
-                        </div>
-
-                        <div class="settings-section">
-                            <h3>🪟 Window Behavior</h3>
-                            <div class="toggle-switch">
-                                <label for="snapToggle">Snap Windows to Grid</label>
-                                <input type="checkbox" id="snapToggle" class="toggle-checkbox" checked>
-                            </div>
-                            <div class="toggle-switch">
-                                <label for="autoArrangeToggle">Auto-Arrange Windows</label>
-                                <input type="checkbox" id="autoArrangeToggle" class="toggle-checkbox">
-                            </div>
-                            <div class="toggle-switch">
-                                <label for="alwaysOnTopToggle">Always Show Taskbar on Top</label>
-                                <input type="checkbox" id="alwaysOnTopToggle" class="toggle-checkbox" checked>
-                            </div>
-                        </div>
-
-                        <div class="settings-section">
-                            <h3>⚡ Performance</h3>
-                            <label for="animSpeedSlider">Animation Speed: <span id="animSpeedValue">Normal</span></label>
-                            <input type="range" id="animSpeedSlider" min="0" max="2" value="1">
-                            <div class="toggle-switch">
-                                <label for="gpuToggle">GPU Acceleration</label>
-                                <input type="checkbox" id="gpuToggle" class="toggle-checkbox" checked>
-                            </div>
-                            <p style="font-size: 12px; margin-top: 10px; color: #999;">
-                                <strong>Refresh Rate:</strong> 60 Hz<br>
-                                <strong>CPU Usage:</strong> Low
-                            </p>
-                        </div>
-
-                        <div class="settings-section">
-                            <h3>ℹ️ System Information</h3>
-                            <p style="font-size: 13px;">
-                                <strong>Portfolio Version:</strong> 2.0<br>
-                                <strong>Build:</strong> 2024.1<br>
-                                <strong>Status:</strong> <span style="color: #0dbc79;">All Systems Operational</span><br>
-                                <strong>Last Updated:</strong> January 2025<br>
-                                <strong>Framework:</strong> Vanilla JavaScript
-                            </p>
-                        </div>
-
-                        <div class="settings-section">
-                            <h3>👨‍💻 Developer Info</h3>
-                            <p style="font-size: 13px;">
-                                <strong>Creator:</strong> ${PROFILE.name}<br>
-                                <strong>Email:</strong> ${PROFILE.email}<br>
-                                <strong>Portfolio:</strong> ${PROFILE.website}<br>
-                                <strong>GitHub:</strong> ${PROFILE.social.github.display}
-                            </p>
                         </div>
                     `,
                     calculator: `
@@ -3006,27 +4050,50 @@ ${userName}-portfolio
                         </div>
                     `,
                     applications: `
-                        <div class="tools-container">
-                            <div class="tools-grid">
-                                <div class="tool-item" data-tool="terminal">
-                                    <div class="tool-icon">$_</div>
-                                    <div class="tool-label">Terminal</div>
+                        <div class="filemanager-container">
+                            <div class="filemanager-toolbar">
+                                <button class="filemanager-back-btn" title="Back">← Back</button>
+                                <div class="filemanager-path-container">
+                                    <input type="text" class="filemanager-path" value="Applications\\" title="Type path and press Enter">
+                                    <div class="filemanager-suggestions"></div>
                                 </div>
-                                <div class="tool-item" data-tool="calculator">
-                                    <div class="tool-icon">🔢</div>
-                                    <div class="tool-label">Calculator</div>
+                            </div>
+                            <div class="filemanager-content">
+                                <div class="filemanager-tree">
                                 </div>
-                                <div class="tool-item" data-tool="passwordgen">
-                                    <div class="tool-icon">🔐</div>
-                                    <div class="tool-label">Password Gen</div>
-                                </div>
-                                <div class="tool-item" data-tool="base64decoder">
-                                    <div class="tool-icon">🔓</div>
-                                    <div class="tool-label">Base64</div>
-                                </div>
-                                <div class="tool-item" data-tool="todolist">
-                                    <div class="tool-icon">✅</div>
-                                    <div class="tool-label">To-Do List</div>
+                                <div class="filemanager-main">
+                                    <div class="file-item" data-tool="terminal">
+                                        <div class="file-icon">$_</div>
+                                        <div class="file-name">Terminal</div>
+                                    </div>
+                                    <div class="file-item" data-tool="calculator">
+                                        <div class="file-icon">🔢</div>
+                                        <div class="file-name">Calculator</div>
+                                    </div>
+                                    <div class="file-item" data-tool="passwordgen">
+                                        <div class="file-icon">🔐</div>
+                                        <div class="file-name">Password Gen</div>
+                                    </div>
+                                    <div class="file-item" data-tool="base64decoder">
+                                        <div class="file-icon">🔓</div>
+                                        <div class="file-name">Base64</div>
+                                    </div>
+                                    <div class="file-item" data-tool="rot13decoder">
+                                        <div class="file-icon">🔄</div>
+                                        <div class="file-name">ROT13</div>
+                                    </div>
+                                    <div class="file-item" data-tool="todolist">
+                                        <div class="file-icon">✅</div>
+                                        <div class="file-name">To-Do List</div>
+                                    </div>
+                                    <div class="file-item" data-tool="imageviewer">
+                                        <div class="file-icon">🖼️</div>
+                                        <div class="file-name">Image Viewer</div>
+                                    </div>
+                                    <div class="file-item" data-tool="notepad">
+                                        <div class="file-icon">📝</div>
+                                        <div class="file-name">Notepad</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -3059,11 +4126,107 @@ ${userName}-portfolio
                                 </div>
                             </div>
                         </div>
+                    `,
+                    rot13decoder: `
+                        <div style="display: flex; flex-direction: column; height: 100%; padding: 15px; gap: 12px; background: linear-gradient(135deg, #f5f7fa 0%, #e9ecf1 100%);">
+                            <h2 style="margin: 0 0 10px 0; color: #333; font-size: 16px;">🔄 ROT13 Cipher</h2>
+
+                            <div style="background: white; border-radius: 8px; padding: 12px; border: 1px solid rgba(102, 126, 234, 0.2);">
+                                <p style="margin: 0 0 8px 0; font-size: 11px; font-weight: 600; color: #666;">CIPHER ALPHABET MAPPING</p>
+                                <div style="font-family: monospace; font-size: 14px; font-weight: 600; color: #333; line-height: 1.8;">
+                                    <div>A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</div>
+                                    <div style="color: #667eea;">N O P Q R S T U V W X Y Z A B C D E F G H I J K L M</div>
+                                </div>
+                            </div>
+
+                            <div style="background: white; border-radius: 8px; padding: 12px; border: 1px solid rgba(102, 126, 234, 0.2);">
+                                <p style="margin: 0 0 8px 0; font-size: 11px; font-weight: 600; color: #666;">EXAMPLE</p>
+                                <p style="margin: 0; font-size: 13px; color: #333;"><strong>Cipher</strong> → <span style="color: #667eea; font-weight: 600;">Pvcure</span></p>
+                            </div>
+
+                            <div style="background: white; border-radius: 8px; padding: 12px; border: 1px solid rgba(102, 126, 234, 0.2);">
+                                <label style="font-size: 12px; font-weight: 600; color: #333; display: block; margin-bottom: 8px;">TRY IT</label>
+                                <input id="rot13TestInput" type="text" placeholder="Type text to see ROT13 conversion..." style="width: 100%; padding: 10px; border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 6px; font-family: monospace; font-size: 12px; background: white; color: #333; outline: none; transition: all 0.3s;" onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102,126,234,0.1)';" onblur="this.style.borderColor='rgba(102, 126, 234, 0.3)'; this.style.boxShadow='none';">
+                                <div style="margin-top: 8px; padding: 10px; background: #f9f9f9; border-radius: 4px; min-height: 24px;">
+                                    <p style="margin: 0; font-size: 12px; color: #666;">Result: <span id="rot13TestOutput" style="color: #667eea; font-weight: 600; font-family: monospace;">-</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    `,
+                    imageviewer: `
+                        <div style="display: flex; flex-direction: column; height: 100%; background: #f5f5f5;">
+                            <div style="padding: 10px; border-bottom: 1px solid #ddd; background: #ffffff;">
+                                <h2 style="margin: 0; color: #333; font-size: 14px;">Image Viewer</h2>
+                            </div>
+                            <div id="imageViewerContainer" style="flex: 1; display: flex; align-items: center; justify-content: space-between; padding: 20px; gap: 10px;">
+                                <button id="prevImageBtn" style="background: rgba(102, 126, 234, 0.2); border: 1px solid #ddd; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 18px; color: #667eea; hover: background rgba(102, 126, 234, 0.3);" title="Previous Image">◀</button>
+                                <div style="flex: 1; display: flex; align-items: center; justify-content: center; overflow: auto;">
+                                    <img id="viewerImage" alt="Image" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                                </div>
+                                <button id="nextImageBtn" style="background: rgba(102, 126, 234, 0.2); border: 1px solid #ddd; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 18px; color: #667eea; hover: background rgba(102, 126, 234, 0.3);" title="Next Image">▶</button>
+                            </div>
+                            <div style="padding: 10px; border-top: 1px solid #ddd; background: #ffffff; color: #666; font-size: 12px; display: flex; justify-content: space-between;">
+                                <span id="imageInfo">Profile Image</span>
+                                <span id="imageCounter" style="color: #999;">1 / 1</span>
+                            </div>
+                        </div>
+                    `,
+                    notepad: `
+                        <div style="display: flex; flex-direction: column; height: 100%; background: #ffffff;">
+                            <div style="padding: 10px; border-bottom: 1px solid #ddd; background: #f9f9f9; display: flex; justify-content: space-between; align-items: center;">
+                                <h2 style="margin: 0; color: #333; font-size: 14px;" id="notepadTitle">Notepad</h2>
+                                <span style="font-size: 12px; color: #999;" id="notepadFilePath"></span>
+                            </div>
+                            <textarea id="notepadContent" style="flex: 1; padding: 15px; border: none; font-family: 'Courier New', monospace; font-size: 13px; color: #333; resize: none; outline: none; background: #ffffff;" readonly></textarea>
+                            <div style="padding: 8px; border-top: 1px solid #ddd; background: #f9f9f9; color: #999; font-size: 11px; display: flex; justify-content: space-between;">
+                                <span id="notepadStats">0 characters</span>
+                                <span id="notepadEncoding">UTF-8</span>
+                            </div>
+                        </div>
                     `
                 };
                 return contents[this.type] || '';
             }
         };
+
+        function showErrorDialog(title, message) {
+            // Create overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'error-dialog-overlay';
+
+            // Create dialog
+            const dialog = document.createElement('div');
+            dialog.className = 'error-dialog';
+
+            dialog.innerHTML = `
+                <div class="error-dialog-header">
+                    <div class="error-dialog-icon">❌</div>
+                    <div class="error-dialog-title">${title}</div>
+                </div>
+                <div class="error-dialog-message">${message}</div>
+                <div class="error-dialog-buttons">
+                    <button class="error-dialog-button error-dialog-button-primary">OK</button>
+                </div>
+            `;
+
+            overlay.appendChild(dialog);
+            document.body.appendChild(overlay);
+
+            // Handle button click
+            const button = dialog.querySelector('.error-dialog-button-primary');
+            button.addEventListener('click', () => {
+                overlay.remove();
+            });
+
+            // Handle escape key
+            const handleEscape = (e) => {
+                if (e.key === 'Escape') {
+                    overlay.remove();
+                    document.removeEventListener('keydown', handleEscape);
+                }
+            };
+            document.addEventListener('keydown', handleEscape);
+        }
 
         function handleLogin() {
             document.getElementById('loginScreen').style.display = 'none';
@@ -3126,9 +4289,9 @@ ${userName}-portfolio
                     let interestsHTML = '<h3>Beyond the Code</h3>';
                     // Split about text by double newlines and create cards
                     const aboutSections = PROFILE.about.split('\n\n').filter(s => s.trim());
+                    const customTitles = ['Family, Friends, & Gaming', 'Creating & Building Projects', 'Outdoor Adventures'];
                     aboutSections.forEach((section, index) => {
-                        const firstLine = section.split('\n')[0].trim();
-                        const title = firstLine.length < 100 ? firstLine : `Interest ${index + 1}`;
+                        const title = customTitles[index] || `Interest ${index + 1}`;
                         interestsHTML += `
                             <div class="mobile-card">
                                 <h4>${title}</h4>

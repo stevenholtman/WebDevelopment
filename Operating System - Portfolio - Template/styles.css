@@ -13,6 +13,34 @@ html {
     scroll-behavior: smooth;
 }
 
+/* Keyboard Focus Indicators */
+*:focus {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+button:focus,
+input:focus,
+textarea:focus,
+select:focus,
+[role="button"]:focus {
+    outline: 3px solid #667eea;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.25);
+}
+
+/* Remove default outline for mouse users only */
+*:focus:not(:focus-visible) {
+    outline: none;
+    box-shadow: none;
+}
+
+/* Ensure focus is visible for keyboard users */
+*:focus-visible {
+    outline: 3px solid #667eea;
+    outline-offset: 2px;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     overflow: hidden;
@@ -1883,6 +1911,31 @@ hr {
     left: 18px;
 }
 
+.settings-category-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.settings-category-icon:hover {
+    background: rgba(102, 126, 234, 0.1);
+    border-color: #667eea;
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.15);
+}
+
+.settings-category-icon:active {
+    transform: translateY(-2px);
+}
+
 .contact-cards-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -2227,9 +2280,10 @@ hr {
     padding: 15px;
     overflow-y: auto;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 8px;
     background: white;
+    align-content: start;
 }
 
 .file-item {
@@ -2242,6 +2296,7 @@ hr {
     user-select: none;
     transition: all 0.2s;
     border-radius: 4px;
+    min-width: 120px;
 }
 
 .file-item:hover {
@@ -2261,7 +2316,127 @@ hr {
     font-size: 11px;
     color: #333;
     text-align: center;
-    word-wrap: break-word;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     width: 100%;
+}
+
+/* Applications window terminal icon styling */
+.file-item[data-tool="terminal"] .file-icon {
+    color: #0dbc79 !important;
+    background: #0c0c0c;
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* ERROR DIALOG STYLING */
+.error-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.error-dialog {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 400px;
+    width: 90%;
+    overflow: hidden;
+    animation: slideUp 0.3s ease-out;
+}
+
+.error-dialog-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 30px 30px;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: white;
+}
+
+.error-dialog-icon {
+    font-size: 60px;
+    margin-bottom: 20px;
+    animation: slideUp 0.4s ease-out 0.1s both;
+}
+
+.error-dialog-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.error-dialog-message {
+    padding: 20px 30px;
+    color: #333;
+    font-size: 14px;
+    line-height: 1.6;
+    text-align: center;
+}
+
+.error-dialog-buttons {
+    display: flex;
+    gap: 10px;
+    padding: 20px 30px;
+    background: #f5f5f5;
+    border-top: 1px solid #e0e0e0;
+}
+
+.error-dialog-button {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.error-dialog-button-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.error-dialog-button-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.error-dialog-button-primary:active {
+    transform: translateY(0);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 

@@ -155,6 +155,7 @@ const PROFILE = {
         skills: "PowerShell Scripts | Batch Automation | Web Development\nReact Projects | DevOps Tools\nGitHub: github.com/stevenholtman",
         contact: "Email: stevenholtman@gmail.com\nPhone: (805) 556-2356\nGitHub: github.com/stevenholtman\nLinkedIn: linkedin.com/in/stevenholtman\nWebsite: stevenholtman.com",
         whoami: "Steven Holtman - L3 Engineer at ITECH Solutions",
+        ipconfig: "Windows IP Configuration\n\nEthernet adapter Ethernet:\n   Connection-specific DNS Suffix: \n   IPv4 Address: 192.168.1.100\n   Subnet Mask: 255.255.255.0\n   Default Gateway: 192.168.1.1\n\nWireless LAN adapter Wi-Fi:\n   Connection-specific DNS Suffix: \n   IPv4 Address: 192.168.1.101\n   Subnet Mask: 255.255.255.0\n   Default Gateway: 192.168.1.1",
         clear: "" // Clear command produces no output
     },
 

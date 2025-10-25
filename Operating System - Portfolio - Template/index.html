@@ -28,7 +28,7 @@
     <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>👤</text></svg>">
     <link rel="canonical" href="https://stevenholtman.com">
 
-    <title>Steven Holtman - L3 Engineer & Project Manager | Portfolio</title>
+    <title>Steven Holtman</title>
     <script src="profile.js"></script>
     <link rel="stylesheet" href="styles.css">
     <style>
@@ -121,10 +121,10 @@
     </div>
 
     <div class="taskbar" id="taskbar" style="display: none;">
-        <button class="taskbar-start" onclick="app.toggleStartMenu()">≡</button>
+        <button class="taskbar-start" onclick="app.toggleStartMenu()" aria-label="Open Start Menu">≡</button>
         <div class="taskbar-search-container">
-            <input type="text" class="taskbar-search-input" id="taskbarSearch" placeholder="🔍 Search apps & content...">
-            <div class="search-results" id="searchResults"></div>
+            <input type="text" class="taskbar-search-input" id="taskbarSearch" placeholder="🔍 Search apps & content..." aria-label="Search for applications and content">
+            <div class="search-results" id="searchResults" role="listbox"></div>
         </div>
         <div class="taskbar-apps" id="taskbarApps"></div>
         <div class="taskbar-system">
@@ -170,17 +170,29 @@
                 📧</div>
             <span>Contact</span>
         </div>
+        <div class="desktop-icon" onclick="app.openWindow('notepad'); setTimeout(() => app.loadCTFRules(), 100)">
+            <div
+                style="width: 48px; height: 48px; background: rgba(255,255,255,0.9); border-radius: 8px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                🚩</div>
+            <span>CTF Rules</span>
+        </div>
+        <div class="desktop-icon" onclick="app.openWindow('applications')">
+            <div
+                style="width: 48px; height: 48px; background: rgba(255,255,255,0.9); border-radius: 8px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                📚</div>
+            <span>Applications</span>
+        </div>
+        <div class="desktop-icon" onclick="app.openWindow('terminal')">
+            <div
+                style="width: 48px; height: 48px; background: rgba(255,255,255,0.9); border-radius: 8px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 24px; background: #0c0c0c; color: #0dbc79;">
+                $_</div>
+            <span>Terminal</span>
+        </div>
         <div class="desktop-icon" onclick="app.openWindow('filemanager')">
             <div
                 style="width: 48px; height: 48px; background: rgba(255,255,255,0.9); border-radius: 8px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 24px;">
                 📂</div>
             <span>File Manager</span>
-        </div>
-        <div class="desktop-icon" onclick="app.openWindow('applications')">
-            <div
-                style="width: 48px; height: 48px; background: rgba(255,255,255,0.9); border-radius: 8px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 24px;">
-                🛠️</div>
-            <span>Applications</span>
         </div>
         <div class="desktop-icon" onclick="app.openWindow('settings')">
             <div
@@ -225,20 +237,6 @@
             </div>
             
             <div class="start-menu-category">Tools</div>
-            <div class="start-menu-item" onclick="app.openWindow('terminal'); app.toggleStartMenu();">
-                <div class="start-menu-item-icon" style="background: #0c0c0c; color: #0dbc79;">$_</div>
-                <div class="start-menu-item-content">
-                    <div class="start-menu-item-title">Terminal</div>
-                    <div class="start-menu-item-desc">Command line interface</div>
-                </div>
-            </div>
-            <div class="start-menu-item" onclick="app.openWindow('calculator'); app.toggleStartMenu();">
-                <div class="start-menu-item-icon">🔢</div>
-                <div class="start-menu-item-content">
-                    <div class="start-menu-item-title">Calculator</div>
-                    <div class="start-menu-item-desc">Basic math calculations</div>
-                </div>
-            </div>
             <div class="start-menu-item" onclick="app.openWindow('passwordgen'); app.toggleStartMenu();">
                 <div class="start-menu-item-icon">🔐</div>
                 <div class="start-menu-item-content">
@@ -253,11 +251,61 @@
                     <div class="start-menu-item-desc">Encode/decode Base64 text</div>
                 </div>
             </div>
+            <div class="start-menu-item" onclick="app.openWindow('rot13decoder'); app.toggleStartMenu();">
+                <div class="start-menu-item-icon">🔄</div>
+                <div class="start-menu-item-content">
+                    <div class="start-menu-item-title">ROT13 Decoder</div>
+                    <div class="start-menu-item-desc">Encode/decode ROT13 text</div>
+                </div>
+            </div>
             <div class="start-menu-item" onclick="app.openWindow('todolist'); app.toggleStartMenu();">
                 <div class="start-menu-item-icon">✅</div>
                 <div class="start-menu-item-content">
                     <div class="start-menu-item-title">To-Do List</div>
                     <div class="start-menu-item-desc">Task management</div>
+                </div>
+            </div>
+            <div class="start-menu-item" onclick="app.openWindow('imageviewer'); app.toggleStartMenu();">
+                <div class="start-menu-item-icon">🖼️</div>
+                <div class="start-menu-item-content">
+                    <div class="start-menu-item-title">Image Viewer</div>
+                    <div class="start-menu-item-desc">View image files</div>
+                </div>
+            </div>
+            <div class="start-menu-item" onclick="app.openWindow('notepad'); app.toggleStartMenu();">
+                <div class="start-menu-item-icon">📝</div>
+                <div class="start-menu-item-content">
+                    <div class="start-menu-item-title">Notepad</div>
+                    <div class="start-menu-item-desc">View and edit text files</div>
+                </div>
+            </div>
+            <div class="start-menu-category">Utilities</div>
+            <div class="start-menu-item" onclick="app.openWindow('terminal'); app.toggleStartMenu();">
+                <div class="start-menu-item-icon" style="background: #0c0c0c; color: #0dbc79;">$_</div>
+                <div class="start-menu-item-content">
+                    <div class="start-menu-item-title">Terminal</div>
+                    <div class="start-menu-item-desc">Command line interface</div>
+                </div>
+            </div>
+            <div class="start-menu-item" onclick="app.openWindow('calculator'); app.toggleStartMenu();">
+                <div class="start-menu-item-icon">🔢</div>
+                <div class="start-menu-item-content">
+                    <div class="start-menu-item-title">Calculator</div>
+                    <div class="start-menu-item-desc">Basic math calculations</div>
+                </div>
+            </div>
+            <div class="start-menu-item" onclick="app.openWindow('filemanager'); app.toggleStartMenu();">
+                <div class="start-menu-item-icon">📂</div>
+                <div class="start-menu-item-content">
+                    <div class="start-menu-item-title">File Manager</div>
+                    <div class="start-menu-item-desc">Browse files and folders</div>
+                </div>
+            </div>
+            <div class="start-menu-item" onclick="app.openWindow('settings'); app.toggleStartMenu();">
+                <div class="start-menu-item-icon">⚙️</div>
+                <div class="start-menu-item-content">
+                    <div class="start-menu-item-title">Settings</div>
+                    <div class="start-menu-item-desc">System settings and preferences</div>
                 </div>
             </div>
             <div class="start-menu-category">Connect</div>
