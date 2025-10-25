@@ -1765,8 +1765,8 @@ FUN:
   matrix         Matrix effect (5 sec)
 
 GAMES:
-  hangman        Play hangman game
-  guess          Number guessing game
+  hangman        Start a new hangman game
+  guess [letter] Guess a letter in hangman (when playing)
 
 OTHER:
   exit           Close terminal`);
@@ -1953,7 +1953,71 @@ ${userName}-portfolio
                         addMessage(this.terminalState.history.map((h, i) => `${i + 1}  ${h}`).join('\n'));
                     }
                 } else if (command === 'hangman') {
-                    addMessage('🎮 HANGMAN GAME\nType: guess [letter] to guess a letter\nWord: _ _ _ _ _\n(Not fully implemented - try other commands!)');
+                    // Initialize hangman game if not exists or if user is starting a new game
+                    const hangmanWords = [
+                        'JAVASCRIPT', 'PROGRAMMING', 'ALGORITHM', 'DATABASE', 'NETWORK',
+                        'SECURITY', 'DEVELOPER', 'TERMINAL', 'PORTFOLIO', 'COMPUTER',
+                        'FUNCTION', 'VARIABLE', 'CALLBACK', 'PROMISE', 'ASYNC',
+                        'FRAMEWORK', 'LIBRARY', 'DEBUGGING', 'OPTIMIZATION', 'ENCRYPTION'
+                    ];
+
+                    if (!this.terminalState.hangmanGame || args === 'new') {
+                        // Start a new game
+                        const randomWord = hangmanWords[Math.floor(Math.random() * hangmanWords.length)];
+                        this.terminalState.hangmanGame = {
+                            word: randomWord,
+                            guessedLetters: [],
+                            wrongGuesses: 0,
+                            maxWrongs: 6,
+                            gameOver: false,
+                            won: false
+                        };
+                        addMessage('🎮 HANGMAN GAME STARTED!\n\nGuess the word by typing: guess [letter]\nYou have 6 wrong guesses allowed.\n');
+                    } else {
+                        // Show current game state
+                        addMessage('Game already in progress. Type "guess [letter]" to make a guess, or "hangman new" to start over.');
+                    }
+
+                    // Display current game state
+                    this.displayHangmanState(addMessage);
+                } else if (command === 'guess' && this.terminalState.hangmanGame && !this.terminalState.hangmanGame.gameOver) {
+                    // Handle hangman guesses
+                    const letter = args.toUpperCase().trim();
+
+                    if (!letter || letter.length !== 1 || !/[A-Z]/.test(letter)) {
+                        addMessage('Please enter a single letter.');
+                    } else if (this.terminalState.hangmanGame.guessedLetters.includes(letter)) {
+                        addMessage(`You already guessed "${letter}". Try a different letter.`);
+                    } else {
+                        const game = this.terminalState.hangmanGame;
+                        game.guessedLetters.push(letter);
+
+                        if (!game.word.includes(letter)) {
+                            game.wrongGuesses++;
+                            addMessage(`❌ Wrong guess! The letter "${letter}" is not in the word.`);
+                        } else {
+                            addMessage(`✓ Correct! The letter "${letter}" is in the word!`);
+                        }
+
+                        // Check win condition
+                        const wordLetters = game.word.split('');
+                        const allGuessed = wordLetters.every(letter => game.guessedLetters.includes(letter));
+
+                        if (allGuessed) {
+                            game.gameOver = true;
+                            game.won = true;
+                            addMessage(`\n🎉 CONGRATULATIONS! You won!\nThe word was: ${game.word}`);
+                        } else if (game.wrongGuesses >= game.maxWrongs) {
+                            game.gameOver = true;
+                            game.won = false;
+                            addMessage(`\n💀 GAME OVER! You lost!\nThe word was: ${game.word}`);
+                        }
+
+                        // Display current state
+                        this.displayHangmanState(addMessage);
+                    }
+                } else if (command === 'guess' && (!this.terminalState.hangmanGame || this.terminalState.hangmanGame.gameOver)) {
+                    addMessage('No hangman game in progress. Type "hangman" to start a new game.');
                 } else if (command === 'guess') {
                     addMessage('🎮 GUESS THE NUMBER\nThink of a number 1-100\nType: higher or lower to give hints\n(Not fully implemented - try other commands!)');
                 } else if (cmd) {
@@ -1966,6 +2030,87 @@ ${userName}-portfolio
                 }
 
                 content.scrollTop = content.scrollHeight;
+            }
+
+            displayHangmanState(addMessage) {
+                const game = this.terminalState.hangmanGame;
+                if (!game) return;
+
+                // Hangman ASCII art stages
+                const hangmanStages = [
+                    `
+  +---+
+  |   |
+      |
+      |
+      |
+      |
+=========`,
+                    `
+  +---+
+  |   |
+  O   |
+      |
+      |
+      |
+=========`,
+                    `
+  +---+
+  |   |
+  O   |
+  |   |
+      |
+      |
+=========`,
+                    `
+  +---+
+  |   |
+  O   |
+ /|   |
+      |
+      |
+=========`,
+                    `
+  +---+
+  |   |
+  O   |
+ /|\\  |
+      |
+      |
+=========`,
+                    `
+  +---+
+  |   |
+  O   |
+ /|\\  |
+ /    |
+      |
+=========`,
+                    `
+  +---+
+  |   |
+  O   |
+ /|\\  |
+ / \\  |
+      |
+=========`
+                ];
+
+                // Display hangman figure
+                addMessage(hangmanStages[game.wrongGuesses]);
+
+                // Display word progress
+                const displayWord = game.word.split('').map(letter =>
+                    game.guessedLetters.includes(letter) ? letter : '_'
+                ).join(' ');
+                addMessage(`\nWord: ${displayWord}`);
+
+                // Display guessed letters
+                const guessedDisplay = game.guessedLetters.join(', ');
+                addMessage(`\nGuessed letters: ${guessedDisplay || 'None'}`);
+
+                // Display wrong guesses counter
+                addMessage(`\nWrong guesses: ${game.wrongGuesses}/${game.maxWrongs}`);
             }
 
             changeTheme(theme) {
