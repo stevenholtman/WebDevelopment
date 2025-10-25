@@ -2332,6 +2332,12 @@ hr {
     font-size: 14px;
 }
 
+/* IMAGE VIEWER WINDOW STYLING */
+.window[data-type="imageviewer"] .window-content {
+    overflow: hidden;
+    padding: 0;
+}
+
 /* ERROR DIALOG STYLING */
 .error-dialog-overlay {
     position: fixed;

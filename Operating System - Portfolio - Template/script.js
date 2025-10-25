@@ -4161,12 +4161,12 @@ ${userName}@steven
                             <div style="padding: 10px; border-bottom: 1px solid #ddd; background: #ffffff;">
                                 <h2 style="margin: 0; color: #333; font-size: 14px;">Image Viewer</h2>
                             </div>
-                            <div id="imageViewerContainer" style="flex: 1; display: flex; align-items: center; justify-content: space-between; padding: 20px; gap: 10px;">
-                                <button id="prevImageBtn" style="background: rgba(102, 126, 234, 0.2); border: 1px solid #ddd; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 18px; color: #667eea; hover: background rgba(102, 126, 234, 0.3);" title="Previous Image">◀</button>
-                                <div style="flex: 1; display: flex; align-items: center; justify-content: center; overflow: auto;">
-                                    <img id="viewerImage" alt="Image" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                            <div id="imageViewerContainer" style="flex: 1; display: flex; align-items: center; justify-content: space-between; padding: 0; gap: 10px; min-height: 0;">
+                                <button id="prevImageBtn" style="background: rgba(102, 126, 234, 0.2); border: 1px solid #ddd; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 18px; color: #667eea; hover: background rgba(102, 126, 234, 0.3); flex-shrink: 0; margin: 0 10px;" title="Previous Image">◀</button>
+                                <div style="flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; width: 100%; height: 100%; min-width: 0; min-height: 0;">
+                                    <img id="viewerImage" alt="Image" style="width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
                                 </div>
-                                <button id="nextImageBtn" style="background: rgba(102, 126, 234, 0.2); border: 1px solid #ddd; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 18px; color: #667eea; hover: background rgba(102, 126, 234, 0.3);" title="Next Image">▶</button>
+                                <button id="nextImageBtn" style="background: rgba(102, 126, 234, 0.2); border: 1px solid #ddd; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 18px; color: #667eea; hover: background rgba(102, 126, 234, 0.3); flex-shrink: 0; margin: 0 10px;" title="Next Image">▶</button>
                             </div>
                             <div style="padding: 10px; border-top: 1px solid #ddd; background: #ffffff; color: #666; font-size: 12px; display: flex; justify-content: space-between;">
                                 <span id="imageInfo">Profile Image</span>
