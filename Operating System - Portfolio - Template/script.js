@@ -80,8 +80,9 @@
                     { title: 'Contact', icon: '📧', type: 'app', windowType: 'contact' },
                     { title: 'Settings', icon: '⚙️', type: 'app', windowType: 'settings' },
 
-                    // Apps - Tools
-                    { title: 'Tools', icon: '🛠️', type: 'app', windowType: 'tools', description: 'Main tools dashboard' },
+                    // Apps - Applications
+                    { title: 'Applications', icon: '🛠️', type: 'app', windowType: 'applications', description: 'Utilities & tools' },
+                    { title: 'File Manager', icon: '📂', type: 'app', windowType: 'filemanager', description: 'Browse files and folders' },
                     { title: 'Terminal', icon: '$_', type: 'app', windowType: 'terminal', description: 'Command line interface' },
                     { title: 'Calculator', icon: '🔢', type: 'app', windowType: 'calculator', description: 'Math calculations' },
                     { title: 'Password Generator', icon: '🔐', type: 'app', windowType: 'passwordgen', description: 'Secure passwords & passphrases' },
@@ -835,7 +836,8 @@
                     passwordgen: { title: 'Password Generator', width: 650, height: 550 },
                     todolist: { title: 'To-Do List', width: 500, height: 500 },
                     base64decoder: { title: 'Base64 Decoder', width: 650, height: 500 },
-                    tools: { title: 'Tools', width: 700, height: 550 }
+                    applications: { title: 'Applications', width: 700, height: 550 },
+                    filemanager: { title: 'File Manager', width: 800, height: 600 }
                 }[this.type];
 
                 const x = 50 + Object.keys(app.windows).length * 30;
@@ -1215,6 +1217,10 @@
                     this.initBase64Decoder(content);
                 } else if (this.type === 'todolist') {
                     this.initTodoList(content);
+                } else if (this.type === 'applications') {
+                    this.initApplications(content);
+                } else if (this.type === 'filemanager') {
+                    this.initFileManager(content);
                 }
             }
 
@@ -1574,6 +1580,413 @@
 
                 renderTodos();
                 app.windows.todolist = this;
+            }
+
+            initApplications(content) {
+                const toolItems = content.querySelectorAll('.tool-item');
+
+                toolItems.forEach(item => {
+                    // Single click to launch (like desktop icons)
+                    item.addEventListener('click', () => {
+                        const toolType = item.getAttribute('data-tool');
+                        app.openWindow(toolType);
+                    });
+                });
+
+                app.windows.applications = this;
+            }
+
+            initFileManager(content) {
+                const navigationHistory = [];
+                let currentPath = 'C';
+                // Expand important folders by default
+                const expandedFolders = new Set([
+                    'C',
+                    'C-Users',
+                    'C-ProgramFiles',
+                    'C-ProgramFiles-Applications',
+                    `C-Users-${PROFILE.name.split(' ')[0]}`,
+                    `C-Users-${PROFILE.name.split(' ')[0]}-Portfolio`
+                ]); // Track which folders are expanded
+
+                const folderStructure = {
+                    'C': ['Users', 'Program Files', 'System'],
+                    'C-Users': [{ name: `${PROFILE.name.split(' ')[0]}`, isFolder: true }],
+                    [`C-Users-${PROFILE.name.split(' ')[0]}`]: [{ name: 'Portfolio', isFolder: true }],
+                    [`C-Users-${PROFILE.name.split(' ')[0]}-Portfolio`]: [
+                        { name: 'Projects.pdf', isFolder: false, action: 'projects', icon: '📄' },
+                        { name: 'Skills.pdf', isFolder: false, action: 'resume', icon: '📄' },
+                        { name: 'Resume.pdf', isFolder: false, action: 'resume', icon: '📄' }
+                    ],
+                    'C-ProgramFiles': [
+                        { name: 'Applications', isFolder: true }
+                    ],
+                    'C-ProgramFiles-Applications': [
+                        { name: 'Terminal', isFolder: false, action: 'terminal', icon: '$_' },
+                        { name: 'Calculator', isFolder: false, action: 'calculator', icon: '🔢' },
+                        { name: 'Password Generator', isFolder: false, action: 'passwordgen', icon: '🔐' },
+                        { name: 'Base64 Decoder', isFolder: false, action: 'base64decoder', icon: '🔓' },
+                        { name: 'To-Do List', isFolder: false, action: 'todolist', icon: '✅' }
+                    ],
+                    'C-System': ['drivers', 'config', 'etc']
+                };
+
+                const buildSidebarTree = () => {
+                    const treeContainer = content.querySelector('.filemanager-tree');
+                    treeContainer.innerHTML = '';
+
+                    const createTreeItem = (path, name, indent = 0, hasChildren = false, isFolder = true, fileData = null) => {
+                        const itemContainer = document.createElement('div');
+                        itemContainer.className = 'folder-item-container';
+
+                        const item = document.createElement('div');
+                        item.className = 'folder-item';
+                        item.style.paddingLeft = (8 + indent * 16) + 'px';
+
+                        const isExpanded = expandedFolders.has(path);
+                        const expandArrow = hasChildren ? (isExpanded ? '▼' : '▶') : ' ';
+
+                        // Determine icon
+                        let icon = '📁';
+                        if (!isFolder && fileData && fileData.icon) {
+                            icon = fileData.icon;
+                        } else if (!isFolder) {
+                            icon = '📄';
+                        }
+
+                        item.innerHTML = `
+                            <div class="folder-expand" style="min-width: 16px; text-align: center; cursor: ${hasChildren ? 'pointer' : 'default'}; font-size: 10px;">${expandArrow}</div>
+                            <div class="folder-icon">${icon}</div>
+                            <div class="folder-name">${name}</div>
+                        `;
+
+                        // Expand/collapse arrow click
+                        if (hasChildren) {
+                            const expandBtn = item.querySelector('.folder-expand');
+                            expandBtn.onclick = (e) => {
+                                e.stopPropagation();
+                                if (expandedFolders.has(path)) {
+                                    expandedFolders.delete(path);
+                                } else {
+                                    expandedFolders.add(path);
+                                }
+                                buildSidebarTree();
+                            };
+                        }
+
+                        // Click handler
+                        if (isFolder) {
+                            item.onclick = () => this.openFolder(path);
+                        } else if (fileData && fileData.action) {
+                            item.onclick = () => app.openWindow(fileData.action);
+                        }
+
+                        if (path === currentPath) {
+                            item.style.background = 'rgba(102, 126, 234, 0.1)';
+                            item.style.borderRadius = '4px';
+                        }
+
+                        itemContainer.appendChild(item);
+                        return itemContainer;
+                    };
+
+                    const buildTreeRecursive = (parentPath, parentName, indent = 0) => {
+                        // Only show children if parent is expanded
+                        if (!expandedFolders.has(parentPath)) return;
+
+                        const items = folderStructure[parentPath] || [];
+
+                        items.forEach(item => {
+                            const itemName = typeof item === 'string' ? item : item.name;
+                            const isItemFolder = typeof item === 'string' || item.isFolder;
+                            const pathKey = itemName.replace(/\s+/g, '');
+                            const newPath = parentPath + '-' + pathKey;
+                            const hasChildren = folderStructure[newPath] !== undefined && folderStructure[newPath].length > 0;
+
+                            // Add folder or file item
+                            const fileData = typeof item === 'string' ? null : item;
+                            treeContainer.appendChild(createTreeItem(newPath, itemName, indent + 1, hasChildren, isItemFolder, fileData));
+
+                            // If this folder is expanded and has children, add them recursively
+                            if (hasChildren && expandedFolders.has(newPath)) {
+                                buildTreeRecursive(newPath, itemName, indent + 1);
+                            }
+                        });
+                    };
+
+                    // Root
+                    const rootItems = folderStructure['C'] || [];
+                    const rootHasChildren = rootItems.length > 0;
+                    treeContainer.appendChild(createTreeItem('C', 'C:\\', 0, rootHasChildren, true, null));
+
+                    // Build nested items recursively
+                    buildTreeRecursive('C', 'C:\\', 0);
+                };
+
+                this.openFolder = (path) => {
+                    currentPath = path;
+                    const mainArea = content.querySelector('.filemanager-main');
+                    const pathDisplay = content.querySelector('.filemanager-path');
+                    const backButton = content.querySelector('.filemanager-back-btn');
+
+                    // Add to history if not already navigating back
+                    if (navigationHistory.length === 0 || navigationHistory[navigationHistory.length - 1] !== path) {
+                        navigationHistory.push(path);
+                    }
+
+                    // Update back button state
+                    if (backButton) {
+                        backButton.disabled = navigationHistory.length <= 1;
+                        backButton.style.opacity = navigationHistory.length <= 1 ? '0.5' : '1';
+                        backButton.style.cursor = navigationHistory.length <= 1 ? 'not-allowed' : 'pointer';
+                    }
+
+                    let displayPath = path.replace(/^C-?/, '').replace(/-/g, '\\');
+                    const fullPath = 'C:\\' + displayPath;
+                    pathDisplay.value = fullPath;
+
+                    // Update sidebar and highlight current folder
+                    buildSidebarTree();
+
+                    // Scroll to and highlight the current folder in the sidebar
+                    setTimeout(() => {
+                        const treeContainer = content.querySelector('.filemanager-tree');
+                        const allFolderItems = treeContainer.querySelectorAll('.folder-item');
+                        allFolderItems.forEach(item => {
+                            item.style.background = '';
+                            item.style.borderRadius = '';
+                        });
+
+                        // Find and highlight the current path item
+                        const lastFolderName = displayPath.split('\\').pop() || 'C:\\';
+                        const currentFolderItem = Array.from(allFolderItems).find(item => {
+                            // Normalize spaces in text content for comparison
+                            const itemText = item.textContent.replace(/\s+/g, '').toUpperCase();
+                            const searchText = lastFolderName.replace(/\s+/g, '').toUpperCase();
+                            return itemText.includes(searchText);
+                        });
+
+                        if (currentFolderItem) {
+                            currentFolderItem.style.background = 'rgba(102, 126, 234, 0.15)';
+                            currentFolderItem.style.borderRadius = '4px';
+                            // Scroll to the highlighted item
+                            currentFolderItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }
+                    }, 0);
+
+                    const items = folderStructure[path] || [];
+                    mainArea.innerHTML = '';
+
+                    items.forEach(item => {
+                        const fileName = typeof item === 'string' ? item : item.name;
+                        const isFolder = typeof item === 'string' || item.isFolder;
+                        const action = item.action;
+                        const customIcon = typeof item === 'string' ? null : item.icon;
+
+                        let icon = '📄';
+                        if (isFolder) {
+                            icon = '📁';
+                        } else if (customIcon) {
+                            icon = customIcon;
+                        }
+
+                        const fileDiv = document.createElement('div');
+                        fileDiv.className = `file-item ${isFolder ? 'folder' : 'file'}`;
+                        fileDiv.style.cursor = 'pointer';
+                        fileDiv.innerHTML = `
+                            <div class="file-icon">${icon}</div>
+                            <div class="file-name">${fileName}</div>
+                        `;
+
+                        if (isFolder) {
+                            fileDiv.onclick = () => {
+                                // Remove spaces from folder name for path key (e.g., "Program Files" -> "ProgramFiles")
+                                const pathKey = fileName.replace(/\s+/g, '');
+                                const newPath = path + '-' + pathKey;
+                                if (action) {
+                                    app.openWindow(action);
+                                } else {
+                                    this.openFolder(newPath);
+                                }
+                            };
+                        } else if (action) {
+                            fileDiv.onclick = () => app.openWindow(action);
+                        }
+
+                        mainArea.appendChild(fileDiv);
+                    });
+                };
+
+                // Add back button functionality
+                const backButton = content.querySelector('.filemanager-back-btn');
+                if (backButton) {
+                    backButton.onclick = () => {
+                        if (navigationHistory.length > 1) {
+                            navigationHistory.pop(); // Remove current
+                            const previousPath = navigationHistory[navigationHistory.length - 1];
+                            // Temporarily clear history to avoid duplicate adding
+                            const tempHistory = navigationHistory.slice();
+                            navigationHistory.length = 0;
+                            navigationHistory.push(...tempHistory);
+                            this.openFolder(previousPath);
+                        }
+                    };
+                }
+
+                // Build list of all valid paths for autocomplete
+                const getAllPaths = () => {
+                    const paths = [];
+                    const pathsWithDisplay = [
+                        { internalPath: 'C', displayPath: 'C:\\' },
+                        { internalPath: 'C-Users', displayPath: 'C:\\Users' },
+                        { internalPath: 'C-Users-' + PROFILE.name.split(' ')[0], displayPath: 'C:\\Users\\' + PROFILE.name.split(' ')[0] },
+                        { internalPath: 'C-Users-' + PROFILE.name.split(' ')[0] + '-Portfolio', displayPath: 'C:\\Users\\' + PROFILE.name.split(' ')[0] + '\\Portfolio' },
+                        { internalPath: 'C-ProgramFiles', displayPath: 'C:\\Program Files' },
+                        { internalPath: 'C-ProgramFiles-Applications', displayPath: 'C:\\Program Files\\Applications' },
+                        { internalPath: 'C-System', displayPath: 'C:\\System' }
+                    ];
+                    return pathsWithDisplay;
+                };
+
+                const allPaths = getAllPaths();
+
+                // Add event listener for path input with autocomplete
+                const pathInput = content.querySelector('.filemanager-path');
+                const suggestionsDiv = content.querySelector('.filemanager-suggestions');
+                let selectedSuggestionIndex = -1;
+
+                if (pathInput) {
+                    pathInput.addEventListener('input', (e) => {
+                        const inputValue = pathInput.value.trim().toUpperCase();
+                        if (inputValue.length === 0) {
+                            suggestionsDiv.innerHTML = '';
+                            return;
+                        }
+
+                        // Filter matching paths
+                        const matches = allPaths.filter(p => p.displayPath.toUpperCase().startsWith(inputValue));
+
+                        if (matches.length === 0) {
+                            suggestionsDiv.innerHTML = '';
+                            return;
+                        }
+
+                        // Show suggestions
+                        suggestionsDiv.innerHTML = matches.map((match, idx) => `
+                            <div class="suggestion-item" data-index="${idx}" data-path="${match.internalPath}">
+                                ${match.displayPath}
+                            </div>
+                        `).join('');
+
+                        // Add click handlers to suggestions
+                        suggestionsDiv.querySelectorAll('.suggestion-item').forEach(item => {
+                            item.addEventListener('click', () => {
+                                const pathToOpen = item.getAttribute('data-path');
+                                pathInput.value = allPaths.find(p => p.internalPath === pathToOpen).displayPath;
+                                suggestionsDiv.innerHTML = '';
+                                this.openFolder(pathToOpen);
+                            });
+
+                            item.addEventListener('mouseover', () => {
+                                item.classList.add('suggestion-hover');
+                            });
+
+                            item.addEventListener('mouseout', () => {
+                                item.classList.remove('suggestion-hover');
+                            });
+                        });
+
+                        selectedSuggestionIndex = -1;
+                    });
+
+                    pathInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            if (selectedSuggestionIndex >= 0) {
+                                // Use selected suggestion
+                                const selectedItem = suggestionsDiv.querySelectorAll('.suggestion-item')[selectedSuggestionIndex];
+                                const pathToOpen = selectedItem.getAttribute('data-path');
+                                pathInput.value = allPaths.find(p => p.internalPath === pathToOpen).displayPath;
+                                suggestionsDiv.innerHTML = '';
+                                this.openFolder(pathToOpen);
+                            } else {
+                                // Direct path entry
+                                let inputPath = pathInput.value.trim().toUpperCase();
+                                // Remove C:\ or C: prefix if present
+                                inputPath = inputPath.replace(/^C:\\?/, '').replace(/\\/g, '-');
+                                const pathToOpen = inputPath ? 'C-' + inputPath : 'C';
+
+                                // Check if path exists
+                                if (folderStructure[pathToOpen] !== undefined) {
+                                    suggestionsDiv.innerHTML = '';
+                                    this.openFolder(pathToOpen);
+                                } else {
+                                    alert('Path not found: ' + pathInput.value);
+                                    pathInput.value = 'C:\\' + (currentPath.replace(/^C-?/, '').replace(/-/g, '\\'));
+                                }
+                            }
+                        }
+                    });
+
+                    pathInput.addEventListener('keydown', (e) => {
+                        const suggestions = suggestionsDiv.querySelectorAll('.suggestion-item');
+                        if (suggestions.length === 0) return;
+
+                        if (e.key === 'ArrowDown') {
+                            e.preventDefault();
+                            selectedSuggestionIndex = Math.min(selectedSuggestionIndex + 1, suggestions.length - 1);
+                            updateSuggestionHighlight();
+                        } else if (e.key === 'ArrowUp') {
+                            e.preventDefault();
+                            selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, -1);
+                            updateSuggestionHighlight();
+                        }
+                    });
+
+                    const updateSuggestionHighlight = () => {
+                        suggestionsDiv.querySelectorAll('.suggestion-item').forEach((item, idx) => {
+                            if (idx === selectedSuggestionIndex) {
+                                item.classList.add('suggestion-selected');
+                            } else {
+                                item.classList.remove('suggestion-selected');
+                            }
+                        });
+                    };
+                }
+
+                // Add resize handle to sidebar
+                const treeContainer = content.querySelector('.filemanager-tree');
+                const resizeHandle = document.createElement('div');
+                resizeHandle.className = 'filemanager-resize-handle';
+                treeContainer.appendChild(resizeHandle);
+
+                // Add drag-to-resize functionality
+                let isResizing = false;
+                resizeHandle.addEventListener('mousedown', (e) => {
+                    isResizing = true;
+                    e.preventDefault();
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (!isResizing) return;
+
+                    const filemanagerContent = content.querySelector('.filemanager-content');
+                    const newWidth = e.clientX - filemanagerContent.getBoundingClientRect().left;
+
+                    // Min width 150px, max width 600px
+                    if (newWidth >= 150 && newWidth <= 600) {
+                        treeContainer.style.width = newWidth + 'px';
+                    }
+                });
+
+                document.addEventListener('mouseup', () => {
+                    isResizing = false;
+                });
+
+                // Initial sidebar build and open C:\ to set up navigation history
+                buildSidebarTree();
+                this.openFolder('C');
+
+                app.windows.filemanager = this;
             }
 
             updateTerminalPrompt(content) {
@@ -2592,43 +3005,56 @@ ${userName}-portfolio
                             </style>
                         </div>
                     `,
-                    tools: `
-                        <div style="display: flex; flex-direction: column; height: 100%; padding: 15px;">
-                            <h3 style="margin-top: 0; margin-bottom: 20px; color: #333;">Utility Tools</h3>
-                            <div style="display: grid; grid-template-columns: 1fr; gap: 12px; flex: 1;">
-                                <div onclick="app.openWindow('terminal')" style="background: linear-gradient(135deg, rgba(13, 188, 121, 0.1) 0%, rgba(13, 188, 121, 0.05) 100%); border: 2px solid rgba(13, 188, 121, 0.3); border-radius: 8px; padding: 15px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 12px;" onmouseover="this.style.background='linear-gradient(135deg, rgba(13, 188, 121, 0.2) 0%, rgba(13, 188, 121, 0.1) 100%)'; this.style.borderColor='rgba(13, 188, 121, 0.5)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='linear-gradient(135deg, rgba(13, 188, 121, 0.1) 0%, rgba(13, 188, 121, 0.05) 100%)'; this.style.borderColor='rgba(13, 188, 121, 0.3)'; this.style.transform='translateY(0)';">
-                                    <div style="font-size: 32px;">$_</div>
-                                    <div>
-                                        <div style="font-weight: 600; color: #333; font-size: 14px;">Terminal</div>
-                                        <div style="font-size: 12px; color: #666;">Command line interface</div>
-                                    </div>
+                    applications: `
+                        <div class="tools-container">
+                            <div class="tools-grid">
+                                <div class="tool-item" data-tool="terminal">
+                                    <div class="tool-icon">$_</div>
+                                    <div class="tool-label">Terminal</div>
                                 </div>
-                                <div onclick="app.openWindow('calculator')" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(102, 126, 234, 0.05) 100%); border: 2px solid rgba(102, 126, 234, 0.3); border-radius: 8px; padding: 15px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 12px;" onmouseover="this.style.background='linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(102, 126, 234, 0.1) 100%)'; this.style.borderColor='rgba(102, 126, 234, 0.5)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(102, 126, 234, 0.05) 100%)'; this.style.borderColor='rgba(102, 126, 234, 0.3)'; this.style.transform='translateY(0)';">
-                                    <div style="font-size: 32px;">🔢</div>
-                                    <div>
-                                        <div style="font-weight: 600; color: #333; font-size: 14px;">Calculator</div>
-                                        <div style="font-size: 12px; color: #666;">Quick calculations</div>
-                                    </div>
+                                <div class="tool-item" data-tool="calculator">
+                                    <div class="tool-icon">🔢</div>
+                                    <div class="tool-label">Calculator</div>
                                 </div>
-                                <div onclick="app.openWindow('passwordgen')" style="background: linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%); border: 2px solid rgba(220, 38, 38, 0.3); border-radius: 8px; padding: 15px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 12px;" onmouseover="this.style.background='linear-gradient(135deg, rgba(220, 38, 38, 0.2) 0%, rgba(220, 38, 38, 0.1) 100%)'; this.style.borderColor='rgba(220, 38, 38, 0.5)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%)'; this.style.borderColor='rgba(220, 38, 38, 0.3)'; this.style.transform='translateY(0)';">
-                                    <div style="font-size: 32px;">🔐</div>
-                                    <div>
-                                        <div style="font-weight: 600; color: #333; font-size: 14px;">Password Generator</div>
-                                        <div style="font-size: 12px; color: #666;">Secure password creation</div>
-                                    </div>
+                                <div class="tool-item" data-tool="passwordgen">
+                                    <div class="tool-icon">🔐</div>
+                                    <div class="tool-label">Password Gen</div>
                                 </div>
-                                <div onclick="app.openWindow('base64decoder')" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%); border: 2px solid rgba(168, 85, 247, 0.3); border-radius: 8px; padding: 15px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 12px;" onmouseover="this.style.background='linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(168, 85, 247, 0.1) 100%)'; this.style.borderColor='rgba(168, 85, 247, 0.5)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%)'; this.style.borderColor='rgba(168, 85, 247, 0.3)'; this.style.transform='translateY(0)';">
-                                    <div style="font-size: 32px;">🔓</div>
-                                    <div>
-                                        <div style="font-weight: 600; color: #333; font-size: 14px;">Base64 Decoder</div>
-                                        <div style="font-size: 12px; color: #666;">Encode/decode text</div>
-                                    </div>
+                                <div class="tool-item" data-tool="base64decoder">
+                                    <div class="tool-icon">🔓</div>
+                                    <div class="tool-label">Base64</div>
                                 </div>
-                                <div onclick="app.openWindow('todolist')" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%); border: 2px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 15px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 12px;" onmouseover="this.style.background='linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.1) 100%)'; this.style.borderColor='rgba(59, 130, 246, 0.5)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)'; this.style.borderColor='rgba(59, 130, 246, 0.3)'; this.style.transform='translateY(0)';">
-                                    <div style="font-size: 32px;">✅</div>
-                                    <div>
-                                        <div style="font-weight: 600; color: #333; font-size: 14px;">To-Do List</div>
-                                        <div style="font-size: 12px; color: #666;">Task management</div>
+                                <div class="tool-item" data-tool="todolist">
+                                    <div class="tool-icon">✅</div>
+                                    <div class="tool-label">To-Do List</div>
+                                </div>
+                            </div>
+                        </div>
+                    `,
+                    filemanager: `
+                        <div class="filemanager-container">
+                            <div class="filemanager-toolbar">
+                                <button class="filemanager-back-btn" title="Back">← Back</button>
+                                <div class="filemanager-path-container">
+                                    <input type="text" class="filemanager-path" value="C:\\" title="Type path and press Enter">
+                                    <div class="filemanager-suggestions"></div>
+                                </div>
+                            </div>
+                            <div class="filemanager-content">
+                                <div class="filemanager-tree">
+                                </div>
+                                <div class="filemanager-main">
+                                    <div class="file-item folder" data-path="C-Users" onclick="app.windows.filemanager.openFolder('C-Users')">
+                                        <div class="file-icon">📁</div>
+                                        <div class="file-name">Users</div>
+                                    </div>
+                                    <div class="file-item folder" data-path="C-ProgramFiles" onclick="app.windows.filemanager.openFolder('C-ProgramFiles')">
+                                        <div class="file-icon">📁</div>
+                                        <div class="file-name">Program Files</div>
+                                    </div>
+                                    <div class="file-item folder" data-path="C-System" onclick="app.windows.filemanager.openFolder('C-System')">
+                                        <div class="file-icon">📁</div>
+                                        <div class="file-name">System</div>
                                     </div>
                                 </div>
                             </div>
