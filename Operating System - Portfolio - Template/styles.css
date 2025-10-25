@@ -815,6 +815,12 @@ body {
     font-family: 'Consolas', 'Courier New', monospace;
     font-size: 14px;
     line-height: 1.6;
+    user-select: text;
+}
+
+.terminal .window-content ::selection {
+    background: rgba(255, 255, 255, 0.25);
+    color: #cccccc;
 }
 
 /* PROFILE */
@@ -955,6 +961,12 @@ h4 {
     word-wrap: break-word;
     font-size: 13px;
     line-height: 1.5;
+    user-select: text;
+}
+
+.terminal-output ::selection {
+    background: rgba(255, 255, 255, 0.25);
+    color: #cccccc;
 }
 
 .terminal-prompt {

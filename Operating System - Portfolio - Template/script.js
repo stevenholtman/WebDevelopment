@@ -86,6 +86,7 @@
                     { title: 'Calculator', icon: '🔢', type: 'app', windowType: 'calculator', description: 'Math calculations' },
                     { title: 'Password Generator', icon: '🔐', type: 'app', windowType: 'passwordgen', description: 'Secure passwords & passphrases' },
                     { title: 'To-Do List', icon: '✅', type: 'app', windowType: 'todolist', description: 'Task management' },
+                    { title: 'Base64 Decoder', icon: '🔓', type: 'app', windowType: 'base64decoder', description: 'Decode Base64 encoded text' },
 
                     // Skills
                     { title: 'PowerShell, Batch, Python', icon: '💻', type: 'skill', description: 'Scripting', windowType: 'resume' },
@@ -833,6 +834,7 @@
                     calculator: { title: 'Calculator', width: 350, height: 450 },
                     passwordgen: { title: 'Password Generator', width: 650, height: 550 },
                     todolist: { title: 'To-Do List', width: 500, height: 500 },
+                    base64decoder: { title: 'Base64 Decoder', width: 650, height: 500 },
                     tools: { title: 'Tools', width: 700, height: 550 }
                 }[this.type];
 
@@ -1047,6 +1049,24 @@
                             if (e.key === 'Tab') {
                                 e.preventDefault();
                                 this.autocompleteTerminal(input);
+                            } else if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+                                // Ctrl+C copy handler for selected terminal output
+                                const selection = window.getSelection();
+                                const selectedText = selection.toString().trim();
+
+                                if (selectedText && selectedText.length > 0) {
+                                    // Copy selected text to clipboard
+                                    navigator.clipboard.writeText(selectedText).catch(() => {
+                                        // Fallback for older browsers
+                                        const textArea = document.createElement('textarea');
+                                        textArea.value = selectedText;
+                                        document.body.appendChild(textArea);
+                                        textArea.select();
+                                        document.execCommand('copy');
+                                        document.body.removeChild(textArea);
+                                    });
+                                    e.preventDefault();
+                                }
                             } else if (e.key === 'ArrowUp') {
                                 e.preventDefault();
                                 if (!this.terminalState.history || this.terminalState.history.length === 0) return;
@@ -1191,6 +1211,8 @@
                     this.initCalculator(content);
                 } else if (this.type === 'passwordgen') {
                     this.initPasswordGen(content);
+                } else if (this.type === 'base64decoder') {
+                    this.initBase64Decoder(content);
                 } else if (this.type === 'todolist') {
                     this.initTodoList(content);
                 }
@@ -1257,6 +1279,71 @@
 
                 // Store methods on window object for access
                 app.windows.calculator = this;
+            }
+
+            initBase64Decoder(content) {
+                const inputText = content.querySelector('#b64InputText');
+                const outputText = content.querySelector('#b64OutputText');
+                const modeButtons = {
+                    encode: content.querySelector('#b64ModeEncode'),
+                    decode: content.querySelector('#b64ModeDecode')
+                };
+
+                let currentMode = 'decode';
+
+                this.setMode = (mode) => {
+                    currentMode = mode;
+                    modeButtons.encode.style.background = mode === 'encode' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'rgba(102, 126, 234, 0.3)';
+                    modeButtons.encode.style.color = mode === 'encode' ? 'white' : '#333';
+                    modeButtons.decode.style.background = mode === 'decode' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'rgba(102, 126, 234, 0.3)';
+                    modeButtons.decode.style.color = mode === 'decode' ? 'white' : '#333';
+                };
+
+                this.processText = () => {
+                    const input = inputText.value.trim();
+                    if (!input) {
+                        outputText.value = '';
+                        return;
+                    }
+
+                    try {
+                        if (currentMode === 'decode') {
+                            // Decode base64
+                            const decoded = atob(input);
+                            outputText.value = decoded;
+                        } else {
+                            // Encode to base64
+                            const encoded = btoa(input);
+                            outputText.value = encoded;
+                        }
+                    } catch (e) {
+                        outputText.value = 'Error: Invalid input for ' + currentMode;
+                    }
+                };
+
+                this.copyOutput = () => {
+                    if (outputText.value) {
+                        outputText.select();
+                        document.execCommand('copy');
+                        const originalText = outputText.value;
+                        outputText.value = '✓ Copied!';
+                        setTimeout(() => {
+                            outputText.value = originalText;
+                        }, 1500);
+                    }
+                };
+
+                this.clearAll = () => {
+                    inputText.value = '';
+                    outputText.value = '';
+                    inputText.focus();
+                };
+
+                // Initialize with decode mode selected
+                this.setMode('decode');
+
+                // Store methods on window object for access
+                app.windows.base64decoder = this;
             }
 
             initPasswordGen(content) {
@@ -1460,8 +1547,23 @@
                     return;
                 }
 
-                // Get available files/dirs in current directory
-                const availableItems = this.terminalState.fileSystem[this.terminalState.currentDir] || [];
+                // Determine target directory and partial name
+                let targetDir = this.terminalState.currentDir;
+                let partialName = currentTyping;
+                let pathPrefix = '';
+
+                // Check if currentTyping contains a path (backslash)
+                if (currentTyping.includes('\\')) {
+                    const lastBackslash = currentTyping.lastIndexOf('\\');
+                    pathPrefix = currentTyping.substring(0, lastBackslash + 1);
+                    partialName = currentTyping.substring(lastBackslash + 1);
+
+                    // Build the target directory path
+                    targetDir = this.terminalState.currentDir + '\\' + currentTyping.substring(0, lastBackslash);
+                }
+
+                // Get available files/dirs in target directory
+                const availableItems = this.terminalState.fileSystem[targetDir] || [];
 
                 // Check if we're continuing from a previous autocomplete
                 if (this.autocompleteState &&
@@ -1472,13 +1574,14 @@
                     this.autocompleteState.index = (this.autocompleteState.index + 1) % this.autocompleteState.matches.length;
                     const newMatch = this.autocompleteState.matches[this.autocompleteState.index];
                     const newValue = parts.slice(0, -1).join(' ');
-                    input.value = newValue ? newValue + ' ' + newMatch : command + ' ' + newMatch;
+                    const completedPath = pathPrefix + newMatch;
+                    input.value = newValue ? newValue + ' ' + completedPath : command + ' ' + completedPath;
                     return;
                 }
 
                 // Find matches
                 const matches = availableItems.filter(item =>
-                    item.toLowerCase().startsWith(currentTyping.toLowerCase())
+                    item.toLowerCase().startsWith(partialName.toLowerCase())
                 );
 
                 if (matches.length === 0) {
@@ -1487,7 +1590,8 @@
                 } else if (matches.length === 1) {
                     // Exactly one match, autocomplete
                     const newValue = parts.slice(0, -1).join(' ');
-                    input.value = newValue ? newValue + ' ' + matches[0] : command + ' ' + matches[0];
+                    const completedPath = pathPrefix + matches[0];
+                    input.value = newValue ? newValue + ' ' + completedPath : command + ' ' + completedPath;
                     // Store state in case user presses Tab again
                     this.autocompleteState = {
                         matches: matches,
@@ -1508,10 +1612,11 @@
                         commonPrefix = commonPrefix.substring(0, j);
                     }
 
-                    // If common prefix is longer than current typing, autocomplete to it
-                    if (commonPrefix.length > currentTyping.length) {
+                    // If common prefix is longer than current partial name, autocomplete to it
+                    if (commonPrefix.length > partialName.length) {
                         const newValue = parts.slice(0, -1).join(' ');
-                        input.value = newValue ? newValue + ' ' + commonPrefix : command + ' ' + commonPrefix;
+                        const completedPath = pathPrefix + commonPrefix;
+                        input.value = newValue ? newValue + ' ' + completedPath : command + ' ' + completedPath;
                         // Store state for cycling
                         this.autocompleteState = {
                             matches: matches,
@@ -1555,19 +1660,24 @@
                         history: [],
                         currentDir: basePath,
                         fileSystem: {
-                            [basePath]: ['index.html', 'styles.css', 'script.js', 'images', 'resume', 'ctf'],
+                            [basePath]: ['index.html', 'styles.css', 'script.js', 'images', 'resume', 'ctf', 'system'],
                             [`${basePath}\\images`]: ['profile.jpeg'],
                             [`${basePath}\\resume`]: [resumeFile],
                             [`${basePath}\\ctf`]: ['challenges', 'hints.txt'],
                             [`${basePath}\\ctf\\challenges`]: ['level1', 'level2'],
                             [`${basePath}\\ctf\\challenges\\level1`]: ['README.txt', 'secret.txt'],
-                            [`${basePath}\\ctf\\challenges\\level2`]: ['advanced.txt']
+                            [`${basePath}\\ctf\\challenges\\level2`]: ['advanced.txt'],
+                            [`${basePath}\\system`]: ['appdata'],
+                            [`${basePath}\\system\\appdata`]: ['local'],
+                            [`${basePath}\\system\\appdata\\local`]: ['temp'],
+                            [`${basePath}\\system\\appdata\\local\\temp`]: ['~temp.cache']
                         },
                         fileContents: {
                             [`${basePath}\\ctf\\hints.txt`]: 'CTF Challenge Started!\nHint: Explore the challenges directory...\nLook for hidden secrets in level1!',
                             [`${basePath}\\ctf\\challenges\\level1\\README.txt`]: 'Level 1: The Beginning\n\nYou have found the first level of our CTF challenge.\nYour goal: Find the flag hidden in this directory.\n\nTry looking at all files with the type command!',
                             [`${basePath}\\ctf\\challenges\\level1\\secret.txt`]: 'FLAG{y0u_f0und_the_f1rst_fl4g_ctf_secr3t_easter_egg}',
-                            [`${basePath}\\ctf\\challenges\\level2\\advanced.txt`]: 'Level 2: Advanced Challenge\n\nCongratulations on finding level 1!\nLevel 2 requires deeper exploration...\n\nCOMING SOON: FLAG{m0re_secrets_await}'
+                            [`${basePath}\\ctf\\challenges\\level2\\advanced.txt`]: 'Level 2: Advanced Challenge\n\nCongratulations on finding level 1!\nLevel 2 requires deeper exploration...\n\nHint: Not all secrets are where you expect them. Explore the entire filesystem...',
+                            [`${basePath}\\system\\appdata\\local\\temp\\~temp.cache`]: 'RkxBR3t0ZW1wX2NhY2hlX2gxZGRlbl80ZHY0bmNlZF9zM2NyM3RzX3dpdGhpbn0='
                         }
                     };
                 }
@@ -2155,6 +2265,33 @@ ${userName}-portfolio
                             </div>
                         </div>
                     `,
+                    base64decoder: `
+                        <div style="display: flex; flex-direction: column; height: 100%; padding: 15px; gap: 12px; background: linear-gradient(135deg, #f5f7fa 0%, #e9ecf1 100%);">
+                            <h2 style="margin: 0 0 10px 0; color: #333; font-size: 16px;">🔓 Base64 Decoder</h2>
+
+                            <div style="display: flex; gap: 8px; margin-bottom: 5px;">
+                                <button id="b64ModeEncode" onclick="app.windows.base64decoder.setMode('encode')" style="flex: 1; padding: 8px; background: rgba(102, 126, 234, 0.3); color: #333; border: 2px solid rgba(102, 126, 234, 0.5); border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; transition: all 0.3s;">Encode</button>
+                                <button id="b64ModeDecode" onclick="app.windows.base64decoder.setMode('decode')" style="flex: 1; padding: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; transition: all 0.3s;">Decode</button>
+                            </div>
+
+                            <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
+                                <div>
+                                    <label style="font-size: 12px; font-weight: 600; color: #333; display: block; margin-bottom: 5px;">Input</label>
+                                    <textarea id="b64InputText" placeholder="Paste your base64 text here..." style="width: 100%; flex: 1; padding: 10px; border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 6px; font-family: monospace; font-size: 12px; resize: none; background: white; color: #333;"></textarea>
+                                </div>
+                                <div>
+                                    <label style="font-size: 12px; font-weight: 600; color: #333; display: block; margin-bottom: 5px;">Output</label>
+                                    <textarea id="b64OutputText" readonly placeholder="Result will appear here..." style="width: 100%; flex: 1; padding: 10px; border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 6px; font-family: monospace; font-size: 12px; resize: none; background: #f9f9f9; color: #333;"></textarea>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="app.windows.base64decoder.processText()" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';">⚡ Process</button>
+                                <button onclick="app.windows.base64decoder.copyOutput()" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';">📋 Copy</button>
+                                <button onclick="app.windows.base64decoder.clearAll()" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';">Clear</button>
+                            </div>
+                        </div>
+                    `,
                     passwordgen: `
                         <div style="display: flex; flex-direction: column; height: 100%; padding: 15px; gap: 12px; background: linear-gradient(135deg, #f5f7fa 0%, #e9ecf1 100%);">
                             <h2 style="margin: 0 0 5px 0; color: #333; font-size: 16px;">Generate Password</h2>
@@ -2265,6 +2402,13 @@ ${userName}-portfolio
                                     <div>
                                         <div style="font-weight: 600; color: #333; font-size: 14px;">Password Generator</div>
                                         <div style="font-size: 12px; color: #666;">Secure password creation</div>
+                                    </div>
+                                </div>
+                                <div onclick="app.openWindow('base64decoder')" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%); border: 2px solid rgba(168, 85, 247, 0.3); border-radius: 8px; padding: 15px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 12px;" onmouseover="this.style.background='linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(168, 85, 247, 0.1) 100%)'; this.style.borderColor='rgba(168, 85, 247, 0.5)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%)'; this.style.borderColor='rgba(168, 85, 247, 0.3)'; this.style.transform='translateY(0)';">
+                                    <div style="font-size: 32px;">🔓</div>
+                                    <div>
+                                        <div style="font-weight: 600; color: #333; font-size: 14px;">Base64 Decoder</div>
+                                        <div style="font-size: 12px; color: #666;">Encode/decode text</div>
                                     </div>
                                 </div>
                                 <div onclick="app.openWindow('todolist')" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%); border: 2px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 15px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 12px;" onmouseover="this.style.background='linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.1) 100%)'; this.style.borderColor='rgba(59, 130, 246, 0.5)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)'; this.style.borderColor='rgba(59, 130, 246, 0.3)'; this.style.transform='translateY(0)';">
