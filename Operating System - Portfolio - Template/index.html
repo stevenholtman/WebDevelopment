@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="Steven Holtman - L3 Engineer & Project Manager. 19+ years IT experience specializing in infrastructure, security, automation, and project management.">
     <meta name="theme-color" content="#667eea">
     <meta name="keywords" content="engineer, project manager, IT, infrastructure, cybersecurity, automation, network, DevOps, PowerShell">
@@ -32,8 +32,24 @@
     <script src="profile.js"></script>
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* Additional inline styles if needed */
+        /* Force no scrolling on desktop only */
+        @media (min-width: 769px) {
+            html, body {
+                overflow: hidden !important;
+                height: 100vh !important;
+                width: 100vw !important;
+                max-height: 100vh !important;
+                max-width: 100vw !important;
+            }
 
+            body {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+            }
+        }
     </style>
 </head>
 
@@ -182,6 +198,18 @@
                 📚</div>
             <span>Applications</span>
         </div>
+        <div class="desktop-icon" onclick="app.openWindow('calendar')">
+            <div
+                style="width: 48px; height: 48px; background: rgba(255,255,255,0.9); border-radius: 8px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                📅</div>
+            <span>Calendar</span>
+        </div>
+        <div class="desktop-icon" onclick="app.openWindow('folder')">
+            <div
+                style="width: 48px; height: 48px; background: rgba(255,255,255,0.9); border-radius: 8px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                🎮</div>
+            <span>Games</span>
+        </div>
         <div class="desktop-icon" onclick="app.openWindow('terminal')">
             <div
                 style="width: 48px; height: 48px; background: rgba(255,255,255,0.9); border-radius: 8px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 24px; background: #0c0c0c; color: #0dbc79;">
@@ -308,6 +336,63 @@
                     <div class="start-menu-item-desc">System settings and preferences</div>
                 </div>
             </div>
+            <div class="start-menu-item" onclick="app.openWindow('calendar'); app.toggleStartMenu();">
+                <div class="start-menu-item-icon">📅</div>
+                <div class="start-menu-item-content">
+                    <div class="start-menu-item-title">Calendar</div>
+                    <div class="start-menu-item-desc">View dates and manage schedule</div>
+                </div>
+            </div>
+            <div class="start-menu-category">Games</div>
+            <div class="start-menu-item" onclick="app.openWindow('folder'); app.toggleStartMenu();">
+                <div class="start-menu-item-icon">🎮</div>
+                <div class="start-menu-item-content">
+                    <div class="start-menu-item-title">Games</div>
+                    <div class="start-menu-item-desc">Game collection</div>
+                </div>
+            </div>
+            <div class="start-menu-item" onclick="app.openWindow('asteroids'); app.toggleStartMenu();">
+                <div class="start-menu-item-icon">🚀</div>
+                <div class="start-menu-item-content">
+                    <div class="start-menu-item-title">Asteroids</div>
+                    <div class="start-menu-item-desc">Classic space shooter</div>
+                </div>
+            </div>
+            <div class="start-menu-item" onclick="app.openWindow('snake'); app.toggleStartMenu();">
+                <div class="start-menu-item-icon">🐍</div>
+                <div class="start-menu-item-content">
+                    <div class="start-menu-item-title">Snake</div>
+                    <div class="start-menu-item-desc">Grow the snake</div>
+                </div>
+            </div>
+            <div class="start-menu-item" onclick="app.openWindow('breakout'); app.toggleStartMenu();">
+                <div class="start-menu-item-icon">🧱</div>
+                <div class="start-menu-item-content">
+                    <div class="start-menu-item-title">Breakout</div>
+                    <div class="start-menu-item-desc">Break all the bricks</div>
+                </div>
+            </div>
+            <div class="start-menu-item" onclick="app.openWindow('spaceinvaders'); app.toggleStartMenu();">
+                <div class="start-menu-item-icon">👾</div>
+                <div class="start-menu-item-content">
+                    <div class="start-menu-item-title">Space Invaders</div>
+                    <div class="start-menu-item-desc">Defend Earth</div>
+                </div>
+            </div>
+            <div class="start-menu-item" onclick="app.openWindow('tetris'); app.toggleStartMenu();">
+                <div class="start-menu-item-icon">🟦</div>
+                <div class="start-menu-item-content">
+                    <div class="start-menu-item-title">Tetris</div>
+                    <div class="start-menu-item-desc">Clear the lines</div>
+                </div>
+            </div>
+            <div class="start-menu-item" onclick="app.openWindow('pacman'); app.toggleStartMenu();">
+                <div class="start-menu-item-icon">🍒</div>
+                <div class="start-menu-item-content">
+                    <div class="start-menu-item-title">Pac-Man</div>
+                    <div class="start-menu-item-desc">Eat dots, avoid ghosts</div>
+                </div>
+            </div>
             <div class="start-menu-category">Connect</div>
             <div class="start-menu-item" onclick="app.openWindow('contact'); app.toggleStartMenu();">
                 <div class="start-menu-item-icon">📧</div>
@@ -331,6 +416,11 @@
 
     <div id="windowsContainer"></div>
 
+    <!-- Screensaver -->
+    <div class="screensaver" id="screensaver">
+        <canvas class="screensaver-canvas" id="screensaverCanvas"></canvas>
+    </div>
+
     <!-- Calendar/Weather Widget -->
     <div class="calendar-widget" id="calendarWidget">
         <div class="calendar-header">
@@ -338,8 +428,18 @@
             <div class="calendar-date" id="widgetDate">Monday, October 18, 2024</div>
         </div>
         <div class="calendar-content">
-            <div id="weatherContent">
-                <div class="weather-loading">Loading weather data...</div>
+            <div class="calendar-content-left">
+                <div id="weatherContent">
+                    <div class="weather-loading">Loading weather data...</div>
+                </div>
+            </div>
+            <div class="calendar-content-right">
+                <div class="widget-calendar-header">
+                    <button onclick="app.widgetCalendar.previousMonth()" class="widget-cal-nav">‹</button>
+                    <div id="widgetCalendarMonthYear" style="flex: 1; text-align: center; font-weight: 600; color: white;"></div>
+                    <button onclick="app.widgetCalendar.nextMonth()" class="widget-cal-nav">›</button>
+                </div>
+                <div id="widgetCalendarGrid" class="widget-calendar-grid"></div>
             </div>
         </div>
     </div>

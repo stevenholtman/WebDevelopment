@@ -15,6 +15,9 @@
 
                 // Load weather data on init
                 calendar.loadWeather();
+
+                // Initialize screensaver
+                this.initScreensaver();
                 
                 // Add click handler for system tray toggle - using setTimeout to ensure DOM is ready
                 setTimeout(() => {
@@ -43,7 +46,8 @@
                             } else {
                                 calendarWidget.classList.add('active');
                                 calendar.render();
-                                
+                                app.widgetCalendar.render();
+
                                 // Update system info inline
                                 const browserInfo = document.getElementById('browserInfo');
                                 if (browserInfo) {
@@ -129,6 +133,16 @@
                     { title: 'ROT13 Decoder', icon: '🔄', type: 'app', windowType: 'rot13decoder', description: 'Encode/decode ROT13 text' },
                     { title: 'Notepad', icon: '📝', type: 'app', windowType: 'notepad', description: 'View and edit text files' },
                     { title: 'Image Viewer', icon: '🖼️', type: 'app', windowType: 'imageviewer', description: 'View image files' },
+                    { title: 'Calendar', icon: '📅', type: 'app', windowType: 'calendar', description: 'View dates and manage schedule' },
+
+                    // Apps - Games
+                    { title: 'Games', icon: '🎮', type: 'app', windowType: 'folder', description: 'Game collection' },
+                    { title: 'Asteroids', icon: '🚀', type: 'app', windowType: 'asteroids', description: 'Classic space shooter game' },
+                    { title: 'Snake', icon: '🐍', type: 'app', windowType: 'snake', description: 'Grow the snake by eating food' },
+                    { title: 'Breakout', icon: '🧱', type: 'app', windowType: 'breakout', description: 'Break bricks with bouncing ball' },
+                    { title: 'Space Invaders', icon: '👾', type: 'app', windowType: 'spaceinvaders', description: 'Defend against alien invasion' },
+                    { title: 'Tetris', icon: '🟦', type: 'app', windowType: 'tetris', description: 'Classic falling blocks puzzle' },
+                    { title: 'Pac-Man', icon: '🍒', type: 'app', windowType: 'pacman', description: 'Navigate maze and eat dots' },
 
                     // Skills
                     { title: 'PowerShell, Batch, Python', icon: '💻', type: 'skill', description: 'Scripting', windowType: 'resume' },
@@ -350,15 +364,16 @@
             toggleCalendar() {
                 const calendarWidget = document.getElementById('calendarWidget');
                 const isActive = calendarWidget.classList.contains('active');
-                
+
                 // Close start menu if open
                 document.getElementById('startMenu').classList.remove('active');
-                
+
                 if (isActive) {
                     calendarWidget.classList.remove('active');
                 } else {
                     calendarWidget.classList.add('active');
                     calendar.render();
+                    app.widgetCalendar.render();
                 }
             },
 
@@ -467,10 +482,101 @@
                 }
             },
 
+            initScreensaver() {
+                let inactivityTimeout;
+                const INACTIVITY_TIME = 30000; // 30 seconds in milliseconds
+
+                const screensaver = document.getElementById('screensaver');
+                const canvas = document.getElementById('screensaverCanvas');
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+                let animationFrameId;
+                let particles = [];
+
+                const resetTimer = () => {
+                    clearTimeout(inactivityTimeout);
+                    inactivityTimeout = setTimeout(() => {
+                        startScreensaver();
+                    }, INACTIVITY_TIME);
+                };
+
+                const startScreensaver = () => {
+                    // Set canvas size
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+
+                    // Show screensaver
+                    screensaver.classList.add('active');
+
+                    // Initialize particles for Matrix effect
+                    particles = [];
+                    const columns = Math.floor(canvas.width / 20);
+                    for (let i = 0; i < columns; i++) {
+                        particles.push({
+                            x: i * 20,
+                            y: Math.random() * canvas.height,
+                            speed: Math.random() * 3 + 2,
+                            chars: '01'.split('')
+                        });
+                    }
+
+                    // Start animation
+                    animateScreensaver();
+                };
+
+                const animateScreensaver = () => {
+                    // Matrix-style falling text effect
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    ctx.fillStyle = '#667eea';
+                    ctx.font = '15px monospace';
+
+                    particles.forEach(particle => {
+                        const char = particle.chars[Math.floor(Math.random() * particle.chars.length)];
+                        ctx.fillText(char, particle.x, particle.y);
+
+                        particle.y += particle.speed;
+
+                        if (particle.y > canvas.height) {
+                            particle.y = 0;
+                        }
+                    });
+
+                    animationFrameId = requestAnimationFrame(animateScreensaver);
+                };
+
+                const stopScreensaver = () => {
+                    screensaver.classList.remove('active');
+                    cancelAnimationFrame(animationFrameId);
+                    particles = [];
+                    resetTimer();
+                };
+
+                // Event listeners to detect activity
+                const activityEvents = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'];
+
+                activityEvents.forEach(event => {
+                    document.addEventListener(event, (e) => {
+                        if (screensaver.classList.contains('active')) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            stopScreensaver();
+                        } else {
+                            resetTimer();
+                        }
+                    }, true);
+                });
+
+                // Initial timer
+                resetTimer();
+            },
+
             updateTaskbar() {
                 const taskbarApps = document.getElementById('taskbarApps');
                 taskbarApps.innerHTML = '';
-                
+
                 Object.entries(app.windows).forEach(([type, windowObj]) => {
                     const button = document.createElement('button');
                     button.className = 'taskbar-app';
@@ -494,7 +600,15 @@
                         filemanager: '📂',
                         applications: '📚',
                         base64decoder: '🔓',
-                        rot13decoder: '🔄'
+                        rot13decoder: '🔄',
+                        calendar: '📅',
+                        folder: '🎮',
+                        asteroids: '🚀',
+                        snake: '🐍',
+                        breakout: '🧱',
+                        spaceinvaders: '👾',
+                        tetris: '🟦',
+                        pacman: '🍒'
                     };
 
                     const titles = {
@@ -512,7 +626,15 @@
                         filemanager: 'File Manager',
                         applications: 'Applications',
                         base64decoder: 'Base64 Decoder',
-                        rot13decoder: 'ROT13 Decoder'
+                        rot13decoder: 'ROT13 Decoder',
+                        calendar: 'Calendar',
+                        folder: 'Games',
+                        asteroids: 'Asteroids',
+                        snake: 'Snake',
+                        breakout: 'Breakout',
+                        spaceinvaders: 'Space Invaders',
+                        tetris: 'Tetris',
+                        pacman: 'Pac-Man'
                     };
                     
                     button.innerHTML = `
@@ -651,8 +773,8 @@
             },
 
             displayWeather() {
-                const weatherContainer = document.getElementById('calendarWeather');
-                const weatherContent = document.getElementById('weatherContent');
+                const weatherContainer = document.getElementById('calendarWeather'); // Calendar window weather div
+                const weatherContent = document.getElementById('weatherContent');   // Widget weather div
                 const taskbarWeather = document.getElementById('taskbarWeather');
                 const widgetTime = document.getElementById('widgetTime');
                 const widgetDate = document.getElementById('widgetDate');
@@ -686,89 +808,91 @@
                     widgetDate.textContent = now.toLocaleDateString('en-US', dateOptions);
                 }
 
-                // Update weather widget popup
-                if (weatherContent) {
-                    // Get sunrise/sunset and forecast data
-                    let sunrise = '--', sunset = '--', uvIndex = '--', pressure = '--', forecast = '';
+                // Update weather widget popup AND calendar window
+                // Get sunrise/sunset and forecast data
+                let sunrise = '--', sunset = '--', uvIndex = '--', pressure = '--', forecast = '';
 
-                    if (this.dailyWeather && this.dailyWeather.sunrise && this.dailyWeather.sunset) {
-                        const sunriseTime = new Date(this.dailyWeather.sunrise[0]);
-                        const sunsetTime = new Date(this.dailyWeather.sunset[0]);
-                        sunrise = sunriseTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: this.locationData.timezone });
-                        sunset = sunsetTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: this.locationData.timezone });
-                    }
-
-                    if (this.weatherData.uv_index !== undefined) {
-                        uvIndex = Math.round(this.weatherData.uv_index);
-                    }
-
-                    if (this.weatherData.pressure_msl !== undefined) {
-                        pressure = (this.weatherData.pressure_msl / 33.86).toFixed(2) + ' inHg';
-                    }
-
-                    // Generate 5-day forecast
-                    if (this.dailyWeather && this.dailyWeather.time) {
-                        for (let i = 1; i <= 5 && i < this.dailyWeather.time.length; i++) {
-                            const forecastDate = new Date(this.dailyWeather.time[i]);
-                            const dayName = forecastDate.toLocaleDateString('en-US', { weekday: 'short' });
-                            const code = this.dailyWeather.weather_code[i];
-                            const weatherInfo = this.getWeatherInfo(code);
-                            const high = Math.round(this.dailyWeather.temperature_2m_max[i]);
-                            const low = Math.round(this.dailyWeather.temperature_2m_min[i]);
-                            forecast += `<div class="forecast-item"><div class="forecast-day">${dayName}</div><div class="forecast-icon">${weatherInfo.icon}</div><div class="forecast-temp">${high}°/${low}°</div></div>`;
-                        }
-                    }
-
-                    weatherContent.innerHTML = `
-                        <div class="weather-section">
-                            <div class="weather-icon">${icon}</div>
-                            <div class="weather-info">
-                                <div class="weather-temp">${temp}°F</div>
-                                <div class="weather-description">${description}</div>
-                            </div>
-                        </div>
-                        <div class="weather-details">
-                            <div class="detail-item">
-                                <div class="detail-label">Humidity</div>
-                                <div class="detail-value">${humidity}%</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Wind Speed</div>
-                                <div class="detail-value">${windSpeed} mph</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Pressure</div>
-                                <div class="detail-value">${pressure}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">UV Index</div>
-                                <div class="detail-value">${uvIndex}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Sunrise</div>
-                                <div class="detail-value">🌅 ${sunrise}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Sunset</div>
-                                <div class="detail-value">🌇 ${sunset}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Location</div>
-                                <div class="detail-value">${locationDisplay}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Timezone</div>
-                                <div class="detail-value">${this.locationData.timezone.split('/')[1].replace(/_/g, ' ')}</div>
-                            </div>
-                        </div>
-                        <div class="weather-forecast">
-                            <div class="forecast-header">5-Day Forecast</div>
-                            <div class="forecast-container">
-                                ${forecast}
-                            </div>
-                        </div>
-                    `;
+                if (this.dailyWeather && this.dailyWeather.sunrise && this.dailyWeather.sunset) {
+                    const sunriseTime = new Date(this.dailyWeather.sunrise[0]);
+                    const sunsetTime = new Date(this.dailyWeather.sunset[0]);
+                    sunrise = sunriseTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: this.locationData.timezone });
+                    sunset = sunsetTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: this.locationData.timezone });
                 }
+
+                if (this.weatherData.uv_index !== undefined) {
+                    uvIndex = Math.round(this.weatherData.uv_index);
+                }
+
+                if (this.weatherData.pressure_msl !== undefined) {
+                    pressure = (this.weatherData.pressure_msl / 33.86).toFixed(2) + ' inHg';
+                }
+
+                // Generate 5-day forecast
+                if (this.dailyWeather && this.dailyWeather.time) {
+                    for (let i = 1; i <= 5 && i < this.dailyWeather.time.length; i++) {
+                        const forecastDate = new Date(this.dailyWeather.time[i]);
+                        const dayName = forecastDate.toLocaleDateString('en-US', { weekday: 'short' });
+                        const code = this.dailyWeather.weather_code[i];
+                        const weatherInfo = this.getWeatherInfo(code);
+                        const high = Math.round(this.dailyWeather.temperature_2m_max[i]);
+                        const low = Math.round(this.dailyWeather.temperature_2m_min[i]);
+                        forecast += `<div class="forecast-item"><div class="forecast-day">${dayName}</div><div class="forecast-icon">${weatherInfo.icon}</div><div class="forecast-temp">${high}°/${low}°</div></div>`;
+                    }
+                }
+
+                const weatherHTML = `
+                    <div class="weather-section">
+                        <div class="weather-icon">${icon}</div>
+                        <div class="weather-info">
+                            <div class="weather-temp">${temp}°F</div>
+                            <div class="weather-description">${description}</div>
+                        </div>
+                    </div>
+                    <div class="weather-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Humidity</div>
+                            <div class="detail-value">${humidity}%</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Wind Speed</div>
+                            <div class="detail-value">${windSpeed} mph</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Pressure</div>
+                            <div class="detail-value">${pressure}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">UV Index</div>
+                            <div class="detail-value">${uvIndex}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Sunrise</div>
+                            <div class="detail-value">🌅 ${sunrise}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Sunset</div>
+                            <div class="detail-value">🌇 ${sunset}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Location</div>
+                            <div class="detail-value">${locationDisplay}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Timezone</div>
+                            <div class="detail-value">${this.locationData.timezone.split('/')[1].replace(/_/g, ' ')}</div>
+                        </div>
+                    </div>
+                    <div class="weather-forecast">
+                        <div class="forecast-header">5-Day Forecast</div>
+                        <div class="forecast-container">
+                            ${forecast}
+                        </div>
+                    </div>
+                `;
+
+                // Update both the widget popup and calendar window
+                if (weatherContent) weatherContent.innerHTML = weatherHTML;
+                if (weatherContainer) weatherContainer.innerHTML = weatherHTML;
 
                 // Update taskbar weather icon, temperature, and location
                 if (taskbarWeather) {
@@ -924,6 +1048,75 @@
             }
         };
 
+        // Widget Calendar Controller (for calendar widget popup)
+        app.widgetCalendar = {
+            currentDate: new Date(),
+
+            render() {
+                this.updateHeader();
+                this.renderDays();
+            },
+
+            updateHeader() {
+                const monthYear = this.currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                document.getElementById('widgetCalendarMonthYear').textContent = monthYear;
+            },
+
+            renderDays() {
+                const grid = document.getElementById('widgetCalendarGrid');
+                grid.innerHTML = '';
+
+                // Day headers
+                const dayNames = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+                dayNames.forEach(day => {
+                    const dayHeader = document.createElement('div');
+                    dayHeader.className = 'widget-cal-day-name';
+                    dayHeader.textContent = day;
+                    grid.appendChild(dayHeader);
+                });
+
+                // Get first day of month and total days
+                const year = this.currentDate.getFullYear();
+                const month = this.currentDate.getMonth();
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const today = new Date();
+
+                // Empty cells before month starts
+                for (let i = 0; i < firstDay; i++) {
+                    const empty = document.createElement('div');
+                    empty.className = 'widget-cal-empty';
+                    grid.appendChild(empty);
+                }
+
+                // Days of the month
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dayCell = document.createElement('div');
+                    dayCell.className = 'widget-cal-day';
+                    dayCell.textContent = day;
+
+                    // Check if this is today
+                    if (year === today.getFullYear() &&
+                        month === today.getMonth() &&
+                        day === today.getDate()) {
+                        dayCell.classList.add('widget-cal-today');
+                    }
+
+                    grid.appendChild(dayCell);
+                }
+            },
+
+            previousMonth() {
+                this.currentDate.setMonth(this.currentDate.getMonth() - 1);
+                this.render();
+            },
+
+            nextMonth() {
+                this.currentDate.setMonth(this.currentDate.getMonth() + 1);
+                this.render();
+            }
+        };
+
         // Context Menu Controller
         const contextMenu = {
             show(x, y) {
@@ -997,7 +1190,15 @@
                     applications: { title: 'Applications', width: 700, height: 550 },
                     filemanager: { title: 'File Manager', width: 800, height: 600 },
                     imageviewer: { title: 'Image Viewer', width: 700, height: 800 },
-                    notepad: { title: 'Notepad', width: 800, height: 500 }
+                    notepad: { title: 'Notepad', width: 800, height: 500 },
+                    calendar: { title: 'Calendar', width: 700, height: 560 },
+                    folder: { title: 'Games', width: 600, height: 500 },
+                    asteroids: { title: 'Asteroids', width: 800, height: 600 },
+                    snake: { title: 'Snake', width: 600, height: 650 },
+                    breakout: { title: 'Breakout', width: 700, height: 600 },
+                    spaceinvaders: { title: 'Space Invaders', width: 700, height: 700 },
+                    tetris: { title: 'Tetris', width: 450, height: 650 },
+                    pacman: { title: 'Pac-Man', width: 700, height: 750 }
                 }[this.type];
 
                 const x = 50 + Object.keys(app.windows).length * 30;
@@ -1309,6 +1510,20 @@
                     this.initImageViewer(content);
                 } else if (this.type === 'notepad') {
                     this.initNotepad(content);
+                } else if (this.type === 'calendar') {
+                    this.initCalendar(content);
+                } else if (this.type === 'asteroids') {
+                    this.initAsteroids(content);
+                } else if (this.type === 'snake') {
+                    this.initSnake(content);
+                } else if (this.type === 'breakout') {
+                    this.initBreakout(content);
+                } else if (this.type === 'spaceinvaders') {
+                    this.initSpaceInvaders(content);
+                } else if (this.type === 'tetris') {
+                    this.initTetris(content);
+                } else if (this.type === 'pacman') {
+                    this.initPacman(content);
                 }
             }
 
@@ -2941,6 +3156,1290 @@
                 app.windows.notepad = this;
             }
 
+            initCalendar(content) {
+                app.windows.calendar = this;
+                this.currentDate = new Date();
+                this.selectedDate = new Date();
+
+                // Methods
+                this.render = () => {
+                    this.updateHeader();
+                    this.renderDays();
+                };
+
+                this.updateHeader = () => {
+                    const now = new Date();
+                    const timeOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
+                    const dateOptions = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
+                    const monthYearOptions = { month: 'long', year: 'numeric' };
+
+                    if (calendar.locationData && calendar.locationData.timezone) {
+                        timeOptions.timeZone = calendar.locationData.timezone;
+                        dateOptions.timeZone = calendar.locationData.timezone;
+                        monthYearOptions.timeZone = calendar.locationData.timezone;
+                    }
+
+                    const time = now.toLocaleTimeString('en-US', timeOptions);
+                    const longDate = now.toLocaleDateString('en-US', dateOptions);
+                    const monthYear = this.currentDate.toLocaleDateString('en-US', monthYearOptions);
+
+                    if (document.getElementById('calendarFullTime')) document.getElementById('calendarFullTime').textContent = time;
+                    if (document.getElementById('calendarFullDate')) document.getElementById('calendarFullDate').textContent = longDate;
+                    if (document.getElementById('calendarMonthYear')) document.getElementById('calendarMonthYear').textContent = monthYear;
+                };
+
+                this.renderDays = () => {
+                    const daysContainer = document.getElementById('calendarDays');
+                    if (!daysContainer) return;
+                    daysContainer.innerHTML = '';
+
+                    const year = this.currentDate.getFullYear();
+                    const month = this.currentDate.getMonth();
+
+                    const firstDay = new Date(year, month, 1);
+                    const startingDayOfWeek = firstDay.getDay();
+                    const lastDay = new Date(year, month + 1, 0);
+                    const daysInMonth = lastDay.getDate();
+                    const prevMonthLastDay = new Date(year, month, 0).getDate();
+
+                    for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+                        const day = prevMonthLastDay - i;
+                        const dayEl = document.createElement('div');
+                        dayEl.className = 'calendar-day other-month';
+                        dayEl.textContent = day;
+                        daysContainer.appendChild(dayEl);
+                    }
+
+                    const today = new Date();
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+                        const dayEl = document.createElement('div');
+                        dayEl.className = 'calendar-day';
+                        dayEl.textContent = day;
+                        if (isToday) dayEl.classList.add('today');
+
+                        dayEl.addEventListener('click', () => {
+                            document.querySelectorAll('.calendar-day').forEach(el => el.classList.remove('selected'));
+                            dayEl.classList.add('selected');
+                        });
+
+                        daysContainer.appendChild(dayEl);
+                    }
+
+                    const remainingCells = 42 - daysContainer.children.length;
+                    for (let day = 1; day <= remainingCells; day++) {
+                        const dayEl = document.createElement('div');
+                        dayEl.className = 'calendar-day other-month';
+                        dayEl.textContent = day;
+                        daysContainer.appendChild(dayEl);
+                    }
+                };
+
+                this.previousMonth = () => {
+                    this.currentDate.setMonth(this.currentDate.getMonth() - 1);
+                    this.render();
+                };
+
+                this.nextMonth = () => {
+                    this.currentDate.setMonth(this.currentDate.getMonth() + 1);
+                    this.render();
+                };
+
+                this.goToToday = () => {
+                    this.currentDate = new Date();
+                    this.selectedDate = new Date();
+                    this.render();
+                };
+
+                // Initial render
+                this.render();
+
+                // Update time every minute
+                setInterval(() => this.updateHeader(), 60000);
+            }
+
+            initAsteroids(content) {
+                app.windows.asteroids = this;
+
+                const canvas = document.getElementById('asteroidsCanvas');
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+
+                // Game state
+                this.gameState = {
+                    running: false,
+                    score: 0,
+                    lives: 3,
+                    ship: {
+                        x: canvas.width / 2,
+                        y: canvas.height / 2,
+                        angle: 0,
+                        vx: 0,
+                        vy: 0,
+                        radius: 15
+                    },
+                    asteroids: [],
+                    bullets: [],
+                    keys: {}
+                };
+
+                // Game methods
+                this.startGame = () => {
+                    this.gameState.running = true;
+                    this.gameState.score = 0;
+                    this.gameState.lives = 3;
+                    this.gameState.asteroids = [];
+                    this.gameState.bullets = [];
+                    this.gameState.ship = {
+                        x: canvas.width / 2,
+                        y: canvas.height / 2,
+                        angle: 0,
+                        vx: 0,
+                        vy: 0,
+                        radius: 15
+                    };
+
+                    document.getElementById('asteroidsGameOver').style.display = 'none';
+                    this.spawnAsteroids(5);
+                    this.gameLoop();
+                };
+
+                this.spawnAsteroids = (count) => {
+                    for (let i = 0; i < count; i++) {
+                        const size = Math.random() < 0.3 ? 50 : Math.random() < 0.6 ? 30 : 20;
+                        let x, y;
+                        do {
+                            x = Math.random() * canvas.width;
+                            y = Math.random() * canvas.height;
+                        } while (Math.hypot(x - this.gameState.ship.x, y - this.gameState.ship.y) < 100);
+
+                        this.gameState.asteroids.push({
+                            x, y,
+                            vx: (Math.random() - 0.5) * 2,
+                            vy: (Math.random() - 0.5) * 2,
+                            radius: size,
+                            rotation: Math.random() * Math.PI * 2
+                        });
+                    }
+                };
+
+                this.gameLoop = () => {
+                    if (!this.gameState.running) return;
+
+                    // Clear canvas
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    // Update ship
+                    if (this.gameState.keys['ArrowLeft']) this.gameState.ship.angle -= 0.1;
+                    if (this.gameState.keys['ArrowRight']) this.gameState.ship.angle += 0.1;
+                    if (this.gameState.keys['ArrowUp']) {
+                        this.gameState.ship.vx += Math.cos(this.gameState.ship.angle) * 0.2;
+                        this.gameState.ship.vy += Math.sin(this.gameState.ship.angle) * 0.2;
+                    }
+
+                    this.gameState.ship.vx *= 0.99;
+                    this.gameState.ship.vy *= 0.99;
+                    this.gameState.ship.x += this.gameState.ship.vx;
+                    this.gameState.ship.y += this.gameState.ship.vy;
+
+                    // Wrap ship
+                    if (this.gameState.ship.x < 0) this.gameState.ship.x = canvas.width;
+                    if (this.gameState.ship.x > canvas.width) this.gameState.ship.x = 0;
+                    if (this.gameState.ship.y < 0) this.gameState.ship.y = canvas.height;
+                    if (this.gameState.ship.y > canvas.height) this.gameState.ship.y = 0;
+
+                    // Draw ship
+                    ctx.save();
+                    ctx.translate(this.gameState.ship.x, this.gameState.ship.y);
+                    ctx.rotate(this.gameState.ship.angle);
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(15, 0);
+                    ctx.lineTo(-10, -10);
+                    ctx.lineTo(-10, 10);
+                    ctx.closePath();
+                    ctx.stroke();
+                    ctx.restore();
+
+                    // Update bullets
+                    this.gameState.bullets.forEach((bullet, i) => {
+                        bullet.x += bullet.vx;
+                        bullet.y += bullet.vy;
+                        bullet.life--;
+
+                        if (bullet.life <= 0 || bullet.x < 0 || bullet.x > canvas.width || bullet.y < 0 || bullet.y > canvas.height) {
+                            this.gameState.bullets.splice(i, 1);
+                        }
+
+                        ctx.fillStyle = '#fff';
+                        ctx.beginPath();
+                        ctx.arc(bullet.x, bullet.y, 2, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+
+                    // Update asteroids
+                    this.gameState.asteroids.forEach((asteroid, i) => {
+                        asteroid.x += asteroid.vx;
+                        asteroid.y += asteroid.vy;
+                        asteroid.rotation += 0.02;
+
+                        if (asteroid.x < 0) asteroid.x = canvas.width;
+                        if (asteroid.x > canvas.width) asteroid.x = 0;
+                        if (asteroid.y < 0) asteroid.y = canvas.height;
+                        if (asteroid.y > canvas.height) asteroid.y = 0;
+
+                        ctx.strokeStyle = '#fff';
+                        ctx.lineWidth = 2;
+                        ctx.save();
+                        ctx.translate(asteroid.x, asteroid.y);
+                        ctx.rotate(asteroid.rotation);
+                        ctx.beginPath();
+                        for (let j = 0; j < 8; j++) {
+                            const angle = (j / 8) * Math.PI * 2;
+                            const r = asteroid.radius * (0.8 + Math.random() * 0.4);
+                            const x = Math.cos(angle) * r;
+                            const y = Math.sin(angle) * r;
+                            if (j === 0) ctx.moveTo(x, y);
+                            else ctx.lineTo(x, y);
+                        }
+                        ctx.closePath();
+                        ctx.stroke();
+                        ctx.restore();
+
+                        // Check collisions with bullets
+                        this.gameState.bullets.forEach((bullet, bi) => {
+                            if (Math.hypot(bullet.x - asteroid.x, bullet.y - asteroid.y) < asteroid.radius) {
+                                this.gameState.bullets.splice(bi, 1);
+                                this.gameState.asteroids.splice(i, 1);
+                                this.gameState.score += Math.floor(100 / asteroid.radius);
+                                document.getElementById('asteroidsScore').textContent = this.gameState.score;
+
+                                if (asteroid.radius > 20) {
+                                    for (let k = 0; k < 2; k++) {
+                                        this.gameState.asteroids.push({
+                                            x: asteroid.x,
+                                            y: asteroid.y,
+                                            vx: (Math.random() - 0.5) * 3,
+                                            vy: (Math.random() - 0.5) * 3,
+                                            radius: asteroid.radius / 2,
+                                            rotation: Math.random() * Math.PI * 2
+                                        });
+                                    }
+                                }
+                            }
+                        });
+
+                        // Check collision with ship
+                        if (Math.hypot(asteroid.x - this.gameState.ship.x, asteroid.y - this.gameState.ship.y) < asteroid.radius + this.gameState.ship.radius) {
+                            this.gameState.lives--;
+                            document.getElementById('asteroidsLives').textContent = this.gameState.lives;
+                            this.gameState.asteroids.splice(i, 1);
+
+                            if (this.gameState.lives <= 0) {
+                                this.gameOver();
+                            } else {
+                                this.gameState.ship.x = canvas.width / 2;
+                                this.gameState.ship.y = canvas.height / 2;
+                                this.gameState.ship.vx = 0;
+                                this.gameState.ship.vy = 0;
+                            }
+                        }
+                    });
+
+                    // Spawn more asteroids if all destroyed
+                    if (this.gameState.asteroids.length === 0) {
+                        this.spawnAsteroids(5 + Math.floor(this.gameState.score / 1000));
+                    }
+
+                    requestAnimationFrame(() => this.gameLoop());
+                };
+
+                this.shoot = () => {
+                    if (!this.gameState.running) return;
+                    this.gameState.bullets.push({
+                        x: this.gameState.ship.x + Math.cos(this.gameState.ship.angle) * 15,
+                        y: this.gameState.ship.y + Math.sin(this.gameState.ship.angle) * 15,
+                        vx: Math.cos(this.gameState.ship.angle) * 5,
+                        vy: Math.sin(this.gameState.ship.angle) * 5,
+                        life: 60
+                    });
+                };
+
+                this.gameOver = () => {
+                    this.gameState.running = false;
+                    document.getElementById('asteroidsFinalScore').textContent = this.gameState.score;
+                    document.getElementById('asteroidsGameOver').style.display = 'block';
+                };
+
+                this.restartGame = () => {
+                    this.startGame();
+                };
+
+                // Key handlers
+                window.addEventListener('keydown', (e) => {
+                    if (this.gameState) {
+                        this.gameState.keys[e.key] = true;
+                        if (e.key === ' ') {
+                            e.preventDefault();
+                            this.shoot();
+                        }
+                    }
+                });
+
+                window.addEventListener('keyup', (e) => {
+                    if (this.gameState && this.gameState.keys) {
+                        this.gameState.keys[e.key] = false;
+                    }
+                });
+
+                // Start game immediately
+                this.startGame();
+            }
+
+            initSnake(content) {
+                app.windows.snake = this;
+                const canvas = document.getElementById('snakeCanvas');
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+
+                const gridSize = 20;
+                const tileCount = canvas.width / gridSize;
+
+                this.gameState = {
+                    running: false,
+                    paused: false,
+                    score: 0,
+                    highScore: localStorage.getItem('snakeHigh') || 0,
+                    snake: [{x: 10, y: 10}],
+                    food: {x: 15, y: 15},
+                    dx: 0,
+                    dy: 0,
+                    speed: 100
+                };
+
+                document.getElementById('snakeHigh').textContent = this.gameState.highScore;
+
+                this.startGame = () => {
+                    this.gameState.running = true;
+                    this.gameState.paused = false;
+                    this.gameState.score = 0;
+                    this.gameState.snake = [{x: 10, y: 10}];
+                    this.gameState.dx = 0;
+                    this.gameState.dy = 0;
+                    this.gameState.speed = 100;
+                    this.spawnFood();
+                    document.getElementById('snakeGameOver').style.display = 'none';
+                    document.getElementById('snakeScore').textContent = this.gameState.score;
+                    this.gameLoop();
+                };
+
+                this.spawnFood = () => {
+                    this.gameState.food = {
+                        x: Math.floor(Math.random() * tileCount),
+                        y: Math.floor(Math.random() * tileCount)
+                    };
+                };
+
+                this.gameLoop = () => {
+                    if (!this.gameState.running || this.gameState.paused) {
+                        if (this.gameState.running) setTimeout(() => this.gameLoop(), this.gameState.speed);
+                        return;
+                    }
+
+                    // Move snake
+                    const head = {x: this.gameState.snake[0].x + this.gameState.dx, y: this.gameState.snake[0].y + this.gameState.dy};
+
+                    // Check wall collision
+                    if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
+                        this.gameOver();
+                        return;
+                    }
+
+                    // Check self collision
+                    for (let segment of this.gameState.snake) {
+                        if (head.x === segment.x && head.y === segment.y) {
+                            this.gameOver();
+                            return;
+                        }
+                    }
+
+                    // Add new head
+                    this.gameState.snake.unshift(head);
+
+                    // Check food collision
+                    if (head.x === this.gameState.food.x && head.y === this.gameState.food.y) {
+                        this.gameState.score += 10;
+                        document.getElementById('snakeScore').textContent = this.gameState.score;
+                        this.spawnFood();
+                    } else {
+                        this.gameState.snake.pop();
+                    }
+
+                    // Clear canvas
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    // Draw snake
+                    this.gameState.snake.forEach((segment, index) => {
+                        ctx.fillStyle = index === 0 ? '#0f0' : '#0a0';
+                        ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize - 2, gridSize - 2);
+                    });
+
+                    // Draw food
+                    ctx.fillStyle = '#f00';
+                    ctx.fillRect(this.gameState.food.x * gridSize, this.gameState.food.y * gridSize, gridSize - 2, gridSize - 2);
+
+                    setTimeout(() => this.gameLoop(), this.gameState.speed);
+                };
+
+                this.gameOver = () => {
+                    this.gameState.running = false;
+                    if (this.gameState.score > this.gameState.highScore) {
+                        this.gameState.highScore = this.gameState.score;
+                        localStorage.setItem('snakeHigh', this.gameState.highScore);
+                        document.getElementById('snakeHigh').textContent = this.gameState.highScore;
+                    }
+                    document.getElementById('snakeFinalScore').textContent = this.gameState.score;
+                    document.getElementById('snakeGameOver').style.display = 'block';
+                };
+
+                this.restartGame = () => {
+                    this.startGame();
+                };
+
+                // Key handlers
+                window.addEventListener('keydown', (e) => {
+                    if (!this.gameState) return;
+
+                    if (e.key === 'p' || e.key === 'P') {
+                        this.gameState.paused = !this.gameState.paused;
+                    }
+
+                    if (e.key === 'ArrowUp' && this.gameState.dy === 0) {
+                        this.gameState.dx = 0;
+                        this.gameState.dy = -1;
+                    } else if (e.key === 'ArrowDown' && this.gameState.dy === 0) {
+                        this.gameState.dx = 0;
+                        this.gameState.dy = 1;
+                    } else if (e.key === 'ArrowLeft' && this.gameState.dx === 0) {
+                        this.gameState.dx = -1;
+                        this.gameState.dy = 0;
+                    } else if (e.key === 'ArrowRight' && this.gameState.dx === 0) {
+                        this.gameState.dx = 1;
+                        this.gameState.dy = 0;
+                    }
+                });
+
+                this.startGame();
+            }
+
+            initBreakout(content) {
+                app.windows.breakout = this;
+                const canvas = document.getElementById('breakoutCanvas');
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+
+                this.gameState = {
+                    running: false,
+                    score: 0,
+                    lives: 3,
+                    level: 1,
+                    paddle: {x: canvas.width / 2 - 50, y: canvas.height - 30, width: 100, height: 10, speed: 7},
+                    ball: {x: canvas.width / 2, y: canvas.height / 2, radius: 8, dx: 4, dy: -4, launched: false},
+                    bricks: [],
+                    keys: {},
+                    levelComplete: false
+                };
+
+                const brickRows = 5;
+                const brickCols = 8;
+                const brickWidth = (canvas.width - 20) / brickCols - 5;
+                const brickHeight = 20;
+
+                this.createBricks = () => {
+                    this.gameState.bricks = [];
+                    const colors = ['#f00', '#ff0', '#0f0', '#00f', '#f0f'];
+                    for (let row = 0; row < brickRows; row++) {
+                        for (let col = 0; col < brickCols; col++) {
+                            this.gameState.bricks.push({
+                                x: col * (brickWidth + 5) + 10,
+                                y: row * (brickHeight + 5) + 50,
+                                width: brickWidth,
+                                height: brickHeight,
+                                color: colors[row],
+                                visible: true
+                            });
+                        }
+                    }
+                };
+
+                this.startGame = () => {
+                    this.gameState.running = true;
+                    this.gameState.score = 0;
+                    this.gameState.lives = 3;
+                    this.gameState.level = 1;
+                    this.gameState.levelComplete = false;
+                    this.gameState.ball = {x: canvas.width / 2, y: canvas.height - 50, radius: 8, dx: 4, dy: -4, launched: false};
+                    this.gameState.paddle.x = canvas.width / 2 - 50;
+
+                    this.createBricks();
+
+                    document.getElementById('breakoutGameOver').style.display = 'none';
+                    document.getElementById('breakoutScore').textContent = this.gameState.score;
+                    document.getElementById('breakoutLives').textContent = this.gameState.lives;
+                    document.getElementById('breakoutLevel').textContent = this.gameState.level;
+                    this.gameLoop();
+                };
+
+                this.nextLevel = () => {
+                    this.gameState.level++;
+                    this.gameState.levelComplete = false;
+
+                    // Increase difficulty: speed up ball
+                    const speedMultiplier = 1 + (this.gameState.level - 1) * 0.1;
+                    this.gameState.ball = {
+                        x: canvas.width / 2,
+                        y: canvas.height - 50,
+                        radius: 8,
+                        dx: 4 * speedMultiplier,
+                        dy: -4 * speedMultiplier,
+                        launched: false
+                    };
+                    this.gameState.paddle.x = canvas.width / 2 - 50;
+
+                    // Bonus points for completing level
+                    this.gameState.score += this.gameState.level * 100;
+                    document.getElementById('breakoutScore').textContent = this.gameState.score;
+                    document.getElementById('breakoutLevel').textContent = this.gameState.level;
+
+                    this.createBricks();
+                    this.gameState.running = true;
+                };
+
+                this.gameLoop = () => {
+                    if (!this.gameState.running) return;
+
+                    // Move paddle
+                    if (this.gameState.keys['ArrowLeft'] && this.gameState.paddle.x > 0) {
+                        this.gameState.paddle.x -= this.gameState.paddle.speed;
+                    }
+                    if (this.gameState.keys['ArrowRight'] && this.gameState.paddle.x < canvas.width - this.gameState.paddle.width) {
+                        this.gameState.paddle.x += this.gameState.paddle.speed;
+                    }
+
+                    // Launch ball with space
+                    if (this.gameState.keys[' '] && !this.gameState.ball.launched) {
+                        this.gameState.ball.launched = true;
+                    }
+
+                    // Move ball
+                    if (this.gameState.ball.launched) {
+                        this.gameState.ball.x += this.gameState.ball.dx;
+                        this.gameState.ball.y += this.gameState.ball.dy;
+
+                        // Wall collision
+                        if (this.gameState.ball.x < this.gameState.ball.radius || this.gameState.ball.x > canvas.width - this.gameState.ball.radius) {
+                            this.gameState.ball.dx = -this.gameState.ball.dx;
+                        }
+                        if (this.gameState.ball.y < this.gameState.ball.radius) {
+                            this.gameState.ball.dy = -this.gameState.ball.dy;
+                        }
+
+                        // Paddle collision
+                        if (this.gameState.ball.y + this.gameState.ball.radius > this.gameState.paddle.y &&
+                            this.gameState.ball.x > this.gameState.paddle.x &&
+                            this.gameState.ball.x < this.gameState.paddle.x + this.gameState.paddle.width) {
+                            this.gameState.ball.dy = -Math.abs(this.gameState.ball.dy);
+                            const hitPos = (this.gameState.ball.x - this.gameState.paddle.x) / this.gameState.paddle.width;
+                            this.gameState.ball.dx = (hitPos - 0.5) * 8;
+                        }
+
+                        // Bottom collision (lose life)
+                        if (this.gameState.ball.y > canvas.height) {
+                            this.gameState.lives--;
+                            document.getElementById('breakoutLives').textContent = this.gameState.lives;
+                            if (this.gameState.lives <= 0) {
+                                this.gameOver();
+                                return;
+                            }
+                            this.gameState.ball = {x: canvas.width / 2, y: canvas.height - 50, radius: 8, dx: 4, dy: -4, launched: false};
+                        }
+
+                        // Brick collision
+                        this.gameState.bricks.forEach(brick => {
+                            if (brick.visible &&
+                                this.gameState.ball.x > brick.x &&
+                                this.gameState.ball.x < brick.x + brick.width &&
+                                this.gameState.ball.y > brick.y &&
+                                this.gameState.ball.y < brick.y + brick.height) {
+                                brick.visible = false;
+                                this.gameState.ball.dy = -this.gameState.ball.dy;
+                                this.gameState.score += 10;
+                                document.getElementById('breakoutScore').textContent = this.gameState.score;
+                            }
+                        });
+
+                        // Check if all bricks are cleared (win condition)
+                        const allBricksCleared = this.gameState.bricks.every(brick => !brick.visible);
+                        if (allBricksCleared && !this.gameState.levelComplete) {
+                            this.gameState.levelComplete = true;
+                            this.gameState.running = false;
+                            // Show level complete message and continue to next level after delay
+                            setTimeout(() => {
+                                this.nextLevel();
+                            }, 2000);
+                        }
+                    } else {
+                        // Ball follows paddle before launch
+                        this.gameState.ball.x = this.gameState.paddle.x + this.gameState.paddle.width / 2;
+                    }
+
+                    // Draw
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    // Draw bricks
+                    this.gameState.bricks.forEach(brick => {
+                        if (brick.visible) {
+                            ctx.fillStyle = brick.color;
+                            ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
+                        }
+                    });
+
+                    // Draw paddle
+                    ctx.fillStyle = '#667eea';
+                    ctx.fillRect(this.gameState.paddle.x, this.gameState.paddle.y, this.gameState.paddle.width, this.gameState.paddle.height);
+
+                    // Draw ball
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath();
+                    ctx.arc(this.gameState.ball.x, this.gameState.ball.y, this.gameState.ball.radius, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Draw level complete message
+                    if (this.gameState.levelComplete) {
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.fillStyle = '#0f0';
+                        ctx.font = 'bold 40px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('Level ' + (this.gameState.level) + ' Complete!', canvas.width / 2, canvas.height / 2 - 20);
+                        ctx.font = '24px Arial';
+                        ctx.fillText('Next level starting...', canvas.width / 2, canvas.height / 2 + 30);
+                        ctx.textAlign = 'left';
+                    }
+
+                    requestAnimationFrame(() => this.gameLoop());
+                };
+
+                this.gameOver = () => {
+                    this.gameState.running = false;
+                    document.getElementById('breakoutFinalScore').textContent = this.gameState.score;
+                    document.getElementById('breakoutGameOver').style.display = 'block';
+                };
+
+                this.restartGame = () => {
+                    this.startGame();
+                };
+
+                window.addEventListener('keydown', (e) => {
+                    if (this.gameState) this.gameState.keys[e.key] = true;
+                });
+
+                window.addEventListener('keyup', (e) => {
+                    if (this.gameState) this.gameState.keys[e.key] = false;
+                });
+
+                this.startGame();
+            }
+
+            initSpaceInvaders(content) {
+                app.windows.spaceinvaders = this;
+                const canvas = document.getElementById('invadersCanvas');
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+
+                this.gameState = {
+                    running: false,
+                    score: 0,
+                    lives: 3,
+                    ship: {x: canvas.width / 2 - 20, y: canvas.height - 60, width: 40, height: 20, speed: 5},
+                    aliens: [],
+                    bullets: [],
+                    alienBullets: [],
+                    alienDirection: 1,
+                    alienSpeed: 1,
+                    keys: {}
+                };
+
+                this.startGame = () => {
+                    this.gameState.running = true;
+                    this.gameState.score = 0;
+                    this.gameState.lives = 3;
+                    this.gameState.ship.x = canvas.width / 2 - 20;
+                    this.gameState.bullets = [];
+                    this.gameState.alienBullets = [];
+                    this.gameState.alienDirection = 1;
+
+                    // Create aliens
+                    this.gameState.aliens = [];
+                    for (let row = 0; row < 4; row++) {
+                        for (let col = 0; col < 8; col++) {
+                            this.gameState.aliens.push({
+                                x: col * 60 + 50,
+                                y: row * 40 + 50,
+                                width: 40,
+                                height: 30
+                            });
+                        }
+                    }
+
+                    document.getElementById('invadersGameOver').style.display = 'none';
+                    document.getElementById('invadersScore').textContent = this.gameState.score;
+                    document.getElementById('invadersLives').textContent = this.gameState.lives;
+                    this.gameLoop();
+                };
+
+                this.gameLoop = () => {
+                    if (!this.gameState.running) return;
+
+                    // Move ship
+                    if (this.gameState.keys['ArrowLeft'] && this.gameState.ship.x > 0) {
+                        this.gameState.ship.x -= this.gameState.ship.speed;
+                    }
+                    if (this.gameState.keys['ArrowRight'] && this.gameState.ship.x < canvas.width - this.gameState.ship.width) {
+                        this.gameState.ship.x += this.gameState.ship.speed;
+                    }
+
+                    // Move aliens
+                    let shouldMoveDown = false;
+                    this.gameState.aliens.forEach(alien => {
+                        alien.x += this.gameState.alienDirection * this.gameState.alienSpeed;
+                        if (alien.x <= 0 || alien.x >= canvas.width - alien.width) {
+                            shouldMoveDown = true;
+                        }
+                    });
+
+                    if (shouldMoveDown) {
+                        this.gameState.alienDirection *= -1;
+                        this.gameState.aliens.forEach(alien => {
+                            alien.y += 20;
+                            if (alien.y > canvas.height - 100) {
+                                this.gameOver();
+                            }
+                        });
+                    }
+
+                    // Random alien shooting
+                    if (Math.random() < 0.02 && this.gameState.aliens.length > 0) {
+                        const shooter = this.gameState.aliens[Math.floor(Math.random() * this.gameState.aliens.length)];
+                        this.gameState.alienBullets.push({x: shooter.x + shooter.width / 2, y: shooter.y + shooter.height, speed: 3});
+                    }
+
+                    // Move bullets
+                    this.gameState.bullets.forEach((bullet, i) => {
+                        bullet.y -= bullet.speed;
+                        if (bullet.y < 0) this.gameState.bullets.splice(i, 1);
+                    });
+
+                    this.gameState.alienBullets.forEach((bullet, i) => {
+                        bullet.y += bullet.speed;
+                        if (bullet.y > canvas.height) this.gameState.alienBullets.splice(i, 1);
+
+                        // Check ship hit
+                        if (bullet.y > this.gameState.ship.y &&
+                            bullet.x > this.gameState.ship.x &&
+                            bullet.x < this.gameState.ship.x + this.gameState.ship.width) {
+                            this.gameState.lives--;
+                            document.getElementById('invadersLives').textContent = this.gameState.lives;
+                            this.gameState.alienBullets.splice(i, 1);
+                            if (this.gameState.lives <= 0) {
+                                this.gameOver();
+                            }
+                        }
+                    });
+
+                    // Check bullet collisions
+                    this.gameState.bullets.forEach((bullet, bi) => {
+                        this.gameState.aliens.forEach((alien, ai) => {
+                            if (bullet.x > alien.x && bullet.x < alien.x + alien.width &&
+                                bullet.y > alien.y && bullet.y < alien.y + alien.height) {
+                                this.gameState.aliens.splice(ai, 1);
+                                this.gameState.bullets.splice(bi, 1);
+                                this.gameState.score += 100;
+                                document.getElementById('invadersScore').textContent = this.gameState.score;
+                            }
+                        });
+                    });
+
+                    // Draw
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    // Draw ship
+                    ctx.fillStyle = '#0f0';
+                    ctx.fillRect(this.gameState.ship.x, this.gameState.ship.y, this.gameState.ship.width, this.gameState.ship.height);
+
+                    // Draw aliens
+                    ctx.fillStyle = '#0f0';
+                    this.gameState.aliens.forEach(alien => {
+                        ctx.fillRect(alien.x, alien.y, alien.width, alien.height);
+                    });
+
+                    // Draw bullets
+                    ctx.fillStyle = '#fff';
+                    this.gameState.bullets.forEach(bullet => {
+                        ctx.fillRect(bullet.x, bullet.y, 3, 10);
+                    });
+
+                    ctx.fillStyle = '#f00';
+                    this.gameState.alienBullets.forEach(bullet => {
+                        ctx.fillRect(bullet.x, bullet.y, 3, 10);
+                    });
+
+                    requestAnimationFrame(() => this.gameLoop());
+                };
+
+                this.shoot = () => {
+                    if (!this.gameState.running) return;
+                    this.gameState.bullets.push({
+                        x: this.gameState.ship.x + this.gameState.ship.width / 2,
+                        y: this.gameState.ship.y,
+                        speed: 7
+                    });
+                };
+
+                this.gameOver = () => {
+                    this.gameState.running = false;
+                    document.getElementById('invadersFinalScore').textContent = this.gameState.score;
+                    document.getElementById('invadersGameOver').style.display = 'block';
+                };
+
+                this.restartGame = () => {
+                    this.startGame();
+                };
+
+                window.addEventListener('keydown', (e) => {
+                    if (this.gameState) {
+                        this.gameState.keys[e.key] = true;
+                        if (e.key === ' ') {
+                            e.preventDefault();
+                            this.shoot();
+                        }
+                    }
+                });
+
+                window.addEventListener('keyup', (e) => {
+                    if (this.gameState) this.gameState.keys[e.key] = false;
+                });
+
+                this.startGame();
+            }
+
+            initTetris(content) {
+                app.windows.tetris = this;
+                const canvas = document.getElementById('tetrisCanvas');
+                if (!canvas) return;
+
+                const COLS = 10;
+                const ROWS = 20;
+                const BLOCK_SIZE = 25;
+                canvas.width = COLS * BLOCK_SIZE;
+                canvas.height = ROWS * BLOCK_SIZE;
+
+                const ctx = canvas.getContext('2d');
+
+                const SHAPES = [
+                    [[1,1,1,1]], // I
+                    [[1,1],[1,1]], // O
+                    [[1,1,1],[0,1,0]], // T
+                    [[1,1,1],[1,0,0]], // L
+                    [[1,1,1],[0,0,1]], // J
+                    [[1,1,0],[0,1,1]], // S
+                    [[0,1,1],[1,1,0]]  // Z
+                ];
+
+                const COLORS = ['#0ff', '#ff0', '#f0f', '#f80', '#00f', '#0f0', '#f00'];
+
+                this.gameState = {
+                    running: false,
+                    score: 0,
+                    lines: 0,
+                    grid: Array(ROWS).fill().map(() => Array(COLS).fill(0)),
+                    currentPiece: null,
+                    currentX: 0,
+                    currentY: 0,
+                    keys: {}
+                };
+
+                this.newPiece = () => {
+                    const index = Math.floor(Math.random() * SHAPES.length);
+                    this.gameState.currentPiece = {shape: SHAPES[index], color: COLORS[index]};
+                    this.gameState.currentX = Math.floor(COLS / 2) - 1;
+                    this.gameState.currentY = 0;
+
+                    if (this.collision()) {
+                        this.gameOver();
+                    }
+                };
+
+                this.collision = () => {
+                    const shape = this.gameState.currentPiece.shape;
+                    for (let y = 0; y < shape.length; y++) {
+                        for (let x = 0; x < shape[y].length; x++) {
+                            if (shape[y][x]) {
+                                const newX = this.gameState.currentX + x;
+                                const newY = this.gameState.currentY + y;
+                                if (newX < 0 || newX >= COLS || newY >= ROWS) return true;
+                                if (newY >= 0 && this.gameState.grid[newY][newX]) return true;
+                            }
+                        }
+                    }
+                    return false;
+                };
+
+                this.merge = () => {
+                    const shape = this.gameState.currentPiece.shape;
+                    const color = this.gameState.currentPiece.color;
+                    for (let y = 0; y < shape.length; y++) {
+                        for (let x = 0; x < shape[y].length; x++) {
+                            if (shape[y][x]) {
+                                this.gameState.grid[this.gameState.currentY + y][this.gameState.currentX + x] = color;
+                            }
+                        }
+                    }
+                };
+
+                this.clearLines = () => {
+                    let linesCleared = 0;
+                    for (let y = ROWS - 1; y >= 0; y--) {
+                        if (this.gameState.grid[y].every(cell => cell !== 0)) {
+                            this.gameState.grid.splice(y, 1);
+                            this.gameState.grid.unshift(Array(COLS).fill(0));
+                            linesCleared++;
+                            y++;
+                        }
+                    }
+                    if (linesCleared > 0) {
+                        this.gameState.lines += linesCleared;
+                        this.gameState.score += linesCleared * 100;
+                        document.getElementById('tetrisLines').textContent = this.gameState.lines;
+                        document.getElementById('tetrisScore').textContent = this.gameState.score;
+                    }
+                };
+
+                this.rotate = () => {
+                    const rotated = this.gameState.currentPiece.shape[0].map((_, i) =>
+                        this.gameState.currentPiece.shape.map(row => row[i]).reverse()
+                    );
+                    const backup = this.gameState.currentPiece.shape;
+                    this.gameState.currentPiece.shape = rotated;
+                    if (this.collision()) {
+                        this.gameState.currentPiece.shape = backup;
+                    }
+                };
+
+                this.startGame = () => {
+                    this.gameState.running = true;
+                    this.gameState.score = 0;
+                    this.gameState.lines = 0;
+                    this.gameState.grid = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+                    document.getElementById('tetrisGameOver').style.display = 'none';
+                    document.getElementById('tetrisScore').textContent = this.gameState.score;
+                    document.getElementById('tetrisLines').textContent = this.gameState.lines;
+                    this.newPiece();
+                    this.gameLoop();
+                };
+
+                this.gameLoop = () => {
+                    if (!this.gameState.running) return;
+
+                    this.gameState.currentY++;
+                    if (this.collision()) {
+                        this.gameState.currentY--;
+                        this.merge();
+                        this.clearLines();
+                        this.newPiece();
+                    }
+
+                    // Draw
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    // Draw grid
+                    for (let y = 0; y < ROWS; y++) {
+                        for (let x = 0; x < COLS; x++) {
+                            if (this.gameState.grid[y][x]) {
+                                ctx.fillStyle = this.gameState.grid[y][x];
+                                ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+                            }
+                        }
+                    }
+
+                    // Draw current piece
+                    if (this.gameState.currentPiece) {
+                        ctx.fillStyle = this.gameState.currentPiece.color;
+                        const shape = this.gameState.currentPiece.shape;
+                        for (let y = 0; y < shape.length; y++) {
+                            for (let x = 0; x < shape[y].length; x++) {
+                                if (shape[y][x]) {
+                                    ctx.fillRect((this.gameState.currentX + x) * BLOCK_SIZE, (this.gameState.currentY + y) * BLOCK_SIZE, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+                                }
+                            }
+                        }
+                    }
+
+                    setTimeout(() => this.gameLoop(), 500);
+                };
+
+                this.gameOver = () => {
+                    this.gameState.running = false;
+                    document.getElementById('tetrisFinalScore').textContent = this.gameState.score;
+                    document.getElementById('tetrisGameOver').style.display = 'block';
+                };
+
+                this.restartGame = () => {
+                    this.startGame();
+                };
+
+                window.addEventListener('keydown', (e) => {
+                    if (!this.gameState || !this.gameState.running) return;
+
+                    if (e.key === 'ArrowLeft') {
+                        this.gameState.currentX--;
+                        if (this.collision()) this.gameState.currentX++;
+                    } else if (e.key === 'ArrowRight') {
+                        this.gameState.currentX++;
+                        if (this.collision()) this.gameState.currentX--;
+                    } else if (e.key === 'ArrowDown') {
+                        this.gameState.currentY++;
+                        if (this.collision()) this.gameState.currentY--;
+                    } else if (e.key === 'ArrowUp') {
+                        this.rotate();
+                    }
+                });
+
+                this.startGame();
+            }
+
+            initPacman(content) {
+                app.windows.pacman = this;
+                const canvas = document.getElementById('pacmanCanvas');
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+
+                const tileSize = 20;
+                const cols = 28;
+                const rows = 31;
+
+                // Simplified maze (1 = wall, 0 = dot, 2 = power pellet, 3 = empty)
+                const createMaze = () => {
+                    const maze = Array(rows).fill().map(() => Array(cols).fill(0));
+                    // Add borders
+                    for (let i = 0; i < cols; i++) {
+                        maze[0][i] = 1;
+                        maze[rows - 1][i] = 1;
+                    }
+                    for (let i = 0; i < rows; i++) {
+                        maze[i][0] = 1;
+                        maze[i][cols - 1] = 1;
+                    }
+                    // Add some internal walls
+                    for (let i = 5; i < 10; i++) {
+                        maze[5][i] = 1;
+                        maze[10][i] = 1;
+                    }
+                    // Power pellets in corners
+                    maze[2][2] = 2;
+                    maze[2][cols - 3] = 2;
+                    maze[rows - 3][2] = 2;
+                    maze[rows - 3][cols - 3] = 2;
+
+                    // Center area empty
+                    for (let y = 12; y < 18; y++) {
+                        for (let x = 10; x < 18; x++) {
+                            maze[y][x] = 3;
+                        }
+                    }
+                    return maze;
+                };
+
+                this.gameState = {
+                    running: false,
+                    score: 0,
+                    lives: 3,
+                    pacman: {x: 14, y: 23, dir: 0, nextDir: 0},
+                    ghosts: [
+                        {x: 13, y: 14, color: '#f00', dir: 0},
+                        {x: 14, y: 14, color: '#0ff', dir: 1},
+                        {x: 15, y: 14, color: '#f0f', dir: 2},
+                        {x: 16, y: 14, color: '#f80', dir: 3}
+                    ],
+                    maze: createMaze(),
+                    powered: false,
+                    powerTime: 0,
+                    keys: {}
+                };
+
+                const dirs = [{x: 1, y: 0}, {x: 0, y: 1}, {x: -1, y: 0}, {x: 0, y: -1}]; // right, down, left, up
+
+                this.startGame = () => {
+                    this.gameState.running = true;
+                    this.gameState.score = 0;
+                    this.gameState.lives = 3;
+                    this.gameState.pacman = {x: 14, y: 23, dir: 0, nextDir: 0};
+                    this.gameState.maze = createMaze();
+                    this.gameState.powered = false;
+                    document.getElementById('pacmanGameOver').style.display = 'none';
+                    document.getElementById('pacmanScore').textContent = this.gameState.score;
+                    document.getElementById('pacmanLives').textContent = this.gameState.lives;
+                    this.gameLoop();
+                };
+
+                this.gameLoop = () => {
+                    if (!this.gameState.running) return;
+
+                    // Move Pac-Man
+                    const nextDir = dirs[this.gameState.pacman.nextDir];
+                    const nextX = this.gameState.pacman.x + nextDir.x;
+                    const nextY = this.gameState.pacman.y + nextDir.y;
+
+                    if (this.gameState.maze[nextY] && this.gameState.maze[nextY][nextX] !== 1) {
+                        this.gameState.pacman.x = nextX;
+                        this.gameState.pacman.y = nextY;
+                        this.gameState.pacman.dir = this.gameState.pacman.nextDir;
+
+                        // Eat dot
+                        if (this.gameState.maze[nextY][nextX] === 0) {
+                            this.gameState.maze[nextY][nextX] = 3;
+                            this.gameState.score += 10;
+                            document.getElementById('pacmanScore').textContent = this.gameState.score;
+                        } else if (this.gameState.maze[nextY][nextX] === 2) {
+                            this.gameState.maze[nextY][nextX] = 3;
+                            this.gameState.score += 50;
+                            this.gameState.powered = true;
+                            this.gameState.powerTime = 50;
+                            document.getElementById('pacmanScore').textContent = this.gameState.score;
+                        }
+                    }
+
+                    // Power pellet timeout
+                    if (this.gameState.powered) {
+                        this.gameState.powerTime--;
+                        if (this.gameState.powerTime <= 0) this.gameState.powered = false;
+                    }
+
+                    // Simple ghost AI
+                    this.gameState.ghosts.forEach(ghost => {
+                        if (Math.random() < 0.3) {
+                            ghost.dir = Math.floor(Math.random() * 4);
+                        }
+                        const gDir = dirs[ghost.dir];
+                        const gNextX = ghost.x + gDir.x;
+                        const gNextY = ghost.y + gDir.y;
+                        if (this.gameState.maze[gNextY] && this.gameState.maze[gNextY][gNextX] !== 1) {
+                            ghost.x = gNextX;
+                            ghost.y = gNextY;
+                        }
+
+                        // Check collision with Pac-Man
+                        if (ghost.x === this.gameState.pacman.x && ghost.y === this.gameState.pacman.y) {
+                            if (this.gameState.powered) {
+                                ghost.x = 14;
+                                ghost.y = 14;
+                                this.gameState.score += 200;
+                                document.getElementById('pacmanScore').textContent = this.gameState.score;
+                            } else {
+                                this.gameState.lives--;
+                                document.getElementById('pacmanLives').textContent = this.gameState.lives;
+                                if (this.gameState.lives <= 0) {
+                                    this.gameOver();
+                                    return;
+                                }
+                                this.gameState.pacman = {x: 14, y: 23, dir: 0, nextDir: 0};
+                            }
+                        }
+                    });
+
+                    // Draw
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    // Draw maze
+                    for (let y = 0; y < rows; y++) {
+                        for (let x = 0; x < cols; x++) {
+                            if (this.gameState.maze[y][x] === 1) {
+                                ctx.fillStyle = '#00f';
+                                ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+                            } else if (this.gameState.maze[y][x] === 0) {
+                                ctx.fillStyle = '#fff';
+                                ctx.fillRect(x * tileSize + 8, y * tileSize + 8, 4, 4);
+                            } else if (this.gameState.maze[y][x] === 2) {
+                                ctx.fillStyle = '#fff';
+                                ctx.fillRect(x * tileSize + 6, y * tileSize + 6, 8, 8);
+                            }
+                        }
+                    }
+
+                    // Draw Pac-Man
+                    ctx.fillStyle = '#ff0';
+                    ctx.beginPath();
+                    ctx.arc(this.gameState.pacman.x * tileSize + tileSize / 2, this.gameState.pacman.y * tileSize + tileSize / 2, tileSize / 2 - 2, 0.2 * Math.PI, 1.8 * Math.PI);
+                    ctx.lineTo(this.gameState.pacman.x * tileSize + tileSize / 2, this.gameState.pacman.y * tileSize + tileSize / 2);
+                    ctx.fill();
+
+                    // Draw ghosts
+                    this.gameState.ghosts.forEach(ghost => {
+                        ctx.fillStyle = this.gameState.powered ? '#00f' : ghost.color;
+                        ctx.fillRect(ghost.x * tileSize + 2, ghost.y * tileSize + 2, tileSize - 4, tileSize - 4);
+                    });
+
+                    setTimeout(() => this.gameLoop(), 150);
+                };
+
+                this.gameOver = () => {
+                    this.gameState.running = false;
+                    document.getElementById('pacmanFinalScore').textContent = this.gameState.score;
+                    document.getElementById('pacmanGameOver').style.display = 'block';
+                };
+
+                this.restartGame = () => {
+                    this.startGame();
+                };
+
+                window.addEventListener('keydown', (e) => {
+                    if (!this.gameState || !this.gameState.running) return;
+
+                    if (e.key === 'ArrowRight') this.gameState.pacman.nextDir = 0;
+                    else if (e.key === 'ArrowDown') this.gameState.pacman.nextDir = 1;
+                    else if (e.key === 'ArrowLeft') this.gameState.pacman.nextDir = 2;
+                    else if (e.key === 'ArrowUp') this.gameState.pacman.nextDir = 3;
+                    else if (e.key === 'p' || e.key === 'P') {
+                        this.gameState.running = !this.gameState.running;
+                        if (this.gameState.running) this.gameLoop();
+                    }
+                });
+
+                this.startGame();
+            }
+
             updateTerminalPrompt(content) {
                 if (this.terminalPromptSpan) {
                     this.terminalPromptSpan.textContent = this.terminalState.currentDir + '>';
@@ -4186,6 +5685,172 @@ ${userName}@steven
                                 <span id="notepadEncoding">UTF-8</span>
                             </div>
                         </div>
+                    `,
+                    calendar: `
+                        <div style="display: flex; flex-direction: column; height: 100%; background: #f5f7fa;">
+                            <div style="padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                <div id="calendarFullTime" style="font-size: 28px; font-weight: 300; margin-bottom: 5px;"></div>
+                                <div id="calendarFullDate" style="font-size: 14px; opacity: 0.9;"></div>
+                            </div>
+
+                            <div style="flex: 1; padding: 15px; background: white; overflow-y: auto;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                    <button onclick="app.windows.calendar.previousMonth()" style="padding: 8px 12px; background: rgba(102, 126, 234, 0.1); border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 6px; cursor: pointer; color: #667eea; font-weight: 600; font-size: 14px;">←</button>
+                                    <div id="calendarMonthYear" style="font-size: 16px; font-weight: 600; color: #333;"></div>
+                                    <button onclick="app.windows.calendar.nextMonth()" style="padding: 8px 12px; background: rgba(102, 126, 234, 0.1); border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 6px; cursor: pointer; color: #667eea; font-weight: 600; font-size: 14px;">→</button>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; margin-bottom: 8px;">
+                                    <div style="font-size: 11px; font-weight: 600; color: #999;">Sun</div>
+                                    <div style="font-size: 11px; font-weight: 600; color: #999;">Mon</div>
+                                    <div style="font-size: 11px; font-weight: 600; color: #999;">Tue</div>
+                                    <div style="font-size: 11px; font-weight: 600; color: #999;">Wed</div>
+                                    <div style="font-size: 11px; font-weight: 600; color: #999;">Thu</div>
+                                    <div style="font-size: 11px; font-weight: 600; color: #999;">Fri</div>
+                                    <div style="font-size: 11px; font-weight: 600; color: #999;">Sat</div>
+                                </div>
+
+                                <div id="calendarDays" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;"></div>
+
+                                <button onclick="app.windows.calendar.goToToday()" style="width: 100%; margin-top: 15px; padding: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px;">Today</button>
+                            </div>
+                        </div>
+                    `,
+                    folder: `
+                        <div style="display: flex; flex-direction: column; height: 100%; padding: 20px;">
+                            <h2 style="margin: 0 0 20px 0; color: #000; font-size: 20px;">🎮 Games</h2>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fill, 100px); gap: 20px; justify-content: start; align-content: start;">
+                                <div onclick="app.openWindow('asteroids')" style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: all 0.3s ease; padding: 10px; border-radius: 8px;" onmouseover="this.style.background='rgba(102, 126, 234, 0.2)'; this.style.transform='scale(1.05)';" onmouseout="this.style.background='transparent'; this.style.transform='scale(1)';">
+                                    <div style="width: 60px; height: 60px; background: rgba(102, 126, 234, 0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 32px; border: 2px solid rgba(102, 126, 234, 0.3);">🚀</div>
+                                    <span style="font-size: 12px; font-weight: 600; color: #000; text-align: center;">Asteroids</span>
+                                </div>
+                                <div onclick="app.openWindow('snake')" style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: all 0.3s ease; padding: 10px; border-radius: 8px;" onmouseover="this.style.background='rgba(102, 126, 234, 0.2)'; this.style.transform='scale(1.05)';" onmouseout="this.style.background='transparent'; this.style.transform='scale(1)';">
+                                    <div style="width: 60px; height: 60px; background: rgba(102, 126, 234, 0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 32px; border: 2px solid rgba(102, 126, 234, 0.3);">🐍</div>
+                                    <span style="font-size: 12px; font-weight: 600; color: #000; text-align: center;">Snake</span>
+                                </div>
+                                <div onclick="app.openWindow('breakout')" style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: all 0.3s ease; padding: 10px; border-radius: 8px;" onmouseover="this.style.background='rgba(102, 126, 234, 0.2)'; this.style.transform='scale(1.05)';" onmouseout="this.style.background='transparent'; this.style.transform='scale(1)';">
+                                    <div style="width: 60px; height: 60px; background: rgba(102, 126, 234, 0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 32px; border: 2px solid rgba(102, 126, 234, 0.3);">🧱</div>
+                                    <span style="font-size: 12px; font-weight: 600; color: #000; text-align: center;">Breakout</span>
+                                </div>
+                                <div onclick="app.openWindow('spaceinvaders')" style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: all 0.3s ease; padding: 10px; border-radius: 8px;" onmouseover="this.style.background='rgba(102, 126, 234, 0.2)'; this.style.transform='scale(1.05)';" onmouseout="this.style.background='transparent'; this.style.transform='scale(1)';">
+                                    <div style="width: 60px; height: 60px; background: rgba(102, 126, 234, 0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 32px; border: 2px solid rgba(102, 126, 234, 0.3);">👾</div>
+                                    <span style="font-size: 12px; font-weight: 600; color: #000; text-align: center;">Space Invaders</span>
+                                </div>
+                                <div onclick="app.openWindow('tetris')" style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: all 0.3s ease; padding: 10px; border-radius: 8px;" onmouseover="this.style.background='rgba(102, 126, 234, 0.2)'; this.style.transform='scale(1.05)';" onmouseout="this.style.background='transparent'; this.style.transform='scale(1)';">
+                                    <div style="width: 60px; height: 60px; background: rgba(102, 126, 234, 0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 32px; border: 2px solid rgba(102, 126, 234, 0.3);">🟦</div>
+                                    <span style="font-size: 12px; font-weight: 600; color: #000; text-align: center;">Tetris</span>
+                                </div>
+                                <div onclick="app.openWindow('pacman')" style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: all 0.3s ease; padding: 10px; border-radius: 8px;" onmouseover="this.style.background='rgba(102, 126, 234, 0.2)'; this.style.transform='scale(1.05)';" onmouseout="this.style.background='transparent'; this.style.transform='scale(1)';">
+                                    <div style="width: 60px; height: 60px; background: rgba(102, 126, 234, 0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 32px; border: 2px solid rgba(102, 126, 234, 0.3);">🍒</div>
+                                    <span style="font-size: 12px; font-weight: 600; color: #000; text-align: center;">Pac-Man</span>
+                                </div>
+                            </div>
+                        </div>
+                    `,
+                    asteroids: `
+                        <div style="display: flex; flex-direction: column; height: 100%; background: #000;">
+                            <div style="padding: 10px; background: #1a1a1a; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center;">
+                                <div style="color: #fff; font-size: 14px; font-weight: 600;">Score: <span id="asteroidsScore">0</span></div>
+                                <div style="color: #fff; font-size: 14px;">Lives: <span id="asteroidsLives">3</span></div>
+                            </div>
+                            <canvas id="asteroidsCanvas" style="flex: 1; display: block; background: #000;"></canvas>
+                            <div id="asteroidsGameOver" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white; background: rgba(0,0,0,0.9); padding: 30px; border-radius: 10px; border: 2px solid #667eea;">
+                                <h2 style="margin: 0 0 10px 0; font-size: 32px; color: #667eea;">Game Over!</h2>
+                                <p style="margin: 0 0 20px 0; font-size: 18px;">Final Score: <span id="asteroidsFinalScore">0</span></p>
+                                <button onclick="app.windows.asteroids.restartGame()" style="padding: 10px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px;">Play Again</button>
+                            </div>
+                            <div style="padding: 10px; background: #1a1a1a; border-top: 1px solid #333; color: #999; font-size: 11px; text-align: center;">
+                                🚀 Arrow Keys: Move | Space: Shoot
+                            </div>
+                        </div>
+                    `,
+                    snake: `
+                        <div style="display: flex; flex-direction: column; height: 100%; background: #1a1a1a;">
+                            <div style="padding: 10px; background: #0a0a0a; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center;">
+                                <div style="color: #0f0; font-size: 14px; font-weight: 600;">Score: <span id="snakeScore">0</span></div>
+                                <div style="color: #0f0; font-size: 14px;">High: <span id="snakeHigh">0</span></div>
+                            </div>
+                            <canvas id="snakeCanvas" style="flex: 1; display: block; background: #000;"></canvas>
+                            <div id="snakeGameOver" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white; background: rgba(0,0,0,0.95); padding: 30px; border-radius: 10px; border: 2px solid #0f0;">
+                                <h2 style="margin: 0 0 10px 0; font-size: 32px; color: #0f0;">Game Over!</h2>
+                                <p style="margin: 0 0 20px 0; font-size: 18px;">Final Score: <span id="snakeFinalScore">0</span></p>
+                                <button onclick="app.windows.snake.restartGame()" style="padding: 10px 30px; background: #0f0; color: #000; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px;">Play Again</button>
+                            </div>
+                            <div style="padding: 10px; background: #0a0a0a; border-top: 1px solid #333; color: #0f0; font-size: 11px; text-align: center;">
+                                🐍 Arrow Keys: Move | P: Pause
+                            </div>
+                        </div>
+                    `,
+                    breakout: `
+                        <div style="display: flex; flex-direction: column; height: 100%; background: #222;">
+                            <div style="padding: 10px; background: #111; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center;">
+                                <div style="color: #fff; font-size: 14px; font-weight: 600;">Score: <span id="breakoutScore">0</span></div>
+                                <div style="color: #f90; font-size: 14px; font-weight: 600;">Level: <span id="breakoutLevel">1</span></div>
+                                <div style="color: #fff; font-size: 14px;">Lives: <span id="breakoutLives">3</span></div>
+                            </div>
+                            <canvas id="breakoutCanvas" style="flex: 1; display: block; background: #000;"></canvas>
+                            <div id="breakoutGameOver" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white; background: rgba(0,0,0,0.95); padding: 30px; border-radius: 10px; border: 2px solid #667eea;">
+                                <h2 style="margin: 0 0 10px 0; font-size: 32px; color: #667eea;">Game Over!</h2>
+                                <p style="margin: 0 0 20px 0; font-size: 18px;">Final Score: <span id="breakoutFinalScore">0</span></p>
+                                <button onclick="app.windows.breakout.restartGame()" style="padding: 10px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px;">Play Again</button>
+                            </div>
+                            <div style="padding: 10px; background: #111; border-top: 1px solid #333; color: #999; font-size: 11px; text-align: center;">
+                                🧱 Arrow Keys: Move Paddle | Space: Launch Ball
+                            </div>
+                        </div>
+                    `,
+                    spaceinvaders: `
+                        <div style="display: flex; flex-direction: column; height: 100%; background: #000;">
+                            <div style="padding: 10px; background: #0a0a0a; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center;">
+                                <div style="color: #0f0; font-size: 14px; font-weight: 600;">Score: <span id="invadersScore">0</span></div>
+                                <div style="color: #0f0; font-size: 14px;">Lives: <span id="invadersLives">3</span></div>
+                            </div>
+                            <canvas id="invadersCanvas" style="flex: 1; display: block; background: #000;"></canvas>
+                            <div id="invadersGameOver" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white; background: rgba(0,0,0,0.95); padding: 30px; border-radius: 10px; border: 2px solid #0f0;">
+                                <h2 style="margin: 0 0 10px 0; font-size: 32px; color: #0f0;">Game Over!</h2>
+                                <p style="margin: 0 0 20px 0; font-size: 18px;">Final Score: <span id="invadersFinalScore">0</span></p>
+                                <button onclick="app.windows.spaceinvaders.restartGame()" style="padding: 10px 30px; background: #0f0; color: #000; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px;">Play Again</button>
+                            </div>
+                            <div style="padding: 10px; background: #0a0a0a; border-top: 1px solid #222; color: #0f0; font-size: 11px; text-align: center;">
+                                👾 Arrow Keys: Move | Space: Shoot
+                            </div>
+                        </div>
+                    `,
+                    tetris: `
+                        <div style="display: flex; flex-direction: column; height: 100%; background: #1a1a2e;">
+                            <div style="padding: 10px; background: #16213e; border-bottom: 1px solid #0f3460; display: flex; justify-content: space-between; align-items: center;">
+                                <div style="color: #fff; font-size: 14px; font-weight: 600;">Score: <span id="tetrisScore">0</span></div>
+                                <div style="color: #fff; font-size: 14px;">Lines: <span id="tetrisLines">0</span></div>
+                            </div>
+                            <div style="flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px;">
+                                <canvas id="tetrisCanvas" style="display: block; background: #000; border: 2px solid #667eea;"></canvas>
+                                <div id="tetrisGameOver" style="display: none; position: absolute; text-align: center; color: white; background: rgba(0,0,0,0.95); padding: 30px; border-radius: 10px; border: 2px solid #667eea;">
+                                    <h2 style="margin: 0 0 10px 0; font-size: 32px; color: #667eea;">Game Over!</h2>
+                                    <p style="margin: 0 0 20px 0; font-size: 18px;">Final Score: <span id="tetrisFinalScore">0</span></p>
+                                    <button onclick="app.windows.tetris.restartGame()" style="padding: 10px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px;">Play Again</button>
+                                </div>
+                            </div>
+                            <div style="padding: 10px; background: #16213e; border-top: 1px solid #0f3460; color: #999; font-size: 11px; text-align: center;">
+                                🟦 ←→: Move | ↑: Rotate | ↓: Drop Faster
+                            </div>
+                        </div>
+                    `,
+                    pacman: `
+                        <div style="display: flex; flex-direction: column; height: 100%; background: #000;">
+                            <div style="padding: 10px; background: #111; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center;">
+                                <div style="color: #ffff00; font-size: 14px; font-weight: 600;">Score: <span id="pacmanScore">0</span></div>
+                                <div style="color: #ffff00; font-size: 14px;">Lives: <span id="pacmanLives">3</span></div>
+                            </div>
+                            <canvas id="pacmanCanvas" style="flex: 1; display: block; background: #000;"></canvas>
+                            <div id="pacmanGameOver" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white; background: rgba(0,0,0,0.95); padding: 30px; border-radius: 10px; border: 2px solid #ffff00;">
+                                <h2 style="margin: 0 0 10px 0; font-size: 32px; color: #ffff00;">Game Over!</h2>
+                                <p style="margin: 0 0 20px 0; font-size: 18px;">Final Score: <span id="pacmanFinalScore">0</span></p>
+                                <button onclick="app.windows.pacman.restartGame()" style="padding: 10px 30px; background: #ffff00; color: #000; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px;">Play Again</button>
+                            </div>
+                            <div style="padding: 10px; background: #111; border-top: 1px solid #333; color: #ffff00; font-size: 11px; text-align: center;">
+                                🍒 Arrow Keys: Move | P: Pause
+                            </div>
+                        </div>
                     `
                 };
                 return contents[this.type] || '';
@@ -4434,6 +6099,36 @@ ${userName}@steven
 
         document.addEventListener('DOMContentLoaded', () => {
             initializeProfile();
+
+            // Prevent any scrolling behavior (desktop only)
+            const applyScrollLock = () => {
+                if (window.innerWidth > 768) {
+                    document.body.style.overflow = 'hidden';
+                    document.documentElement.style.overflow = 'hidden';
+                    window.scrollTo(0, 0);
+                } else {
+                    document.body.style.overflow = '';
+                    document.documentElement.style.overflow = '';
+                }
+            };
+
+            applyScrollLock();
+
+            if (window.innerWidth > 768) {
+                // Prevent scroll on various events (desktop only)
+                window.addEventListener('scroll', (e) => {
+                    window.scrollTo(0, 0);
+                    e.preventDefault();
+                }, { passive: false });
+
+                document.addEventListener('scroll', (e) => {
+                    window.scrollTo(0, 0);
+                    e.preventDefault();
+                }, { passive: false });
+            }
+
+            // Handle window resize/orientation change
+            window.addEventListener('resize', applyScrollLock);
 
             const now = new Date();
             const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });

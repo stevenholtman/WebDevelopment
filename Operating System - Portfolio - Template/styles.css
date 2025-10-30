@@ -10,7 +10,9 @@
 }
 
 html {
-    scroll-behavior: smooth;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
 }
 
 /* Keyboard Focus Indicators */
@@ -46,6 +48,12 @@ body {
     overflow: hidden;
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
     height: 100vh;
+    width: 100vw;
+    max-height: 100vh;
+    max-width: 100vw;
+    position: fixed;
+    top: 0;
+    left: 0;
     cursor: default;
     user-select: none;
     animation: gradientShift 15s ease infinite;
@@ -61,11 +69,27 @@ body {
 /* MOBILE STYLES */
 @media (max-width: 768px) {
     body {
-        overflow-y: auto;
-        overflow-x: hidden;
-        height: auto;
-        min-height: 100vh;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        height: auto !important;
+        min-height: 100vh !important;
+        max-height: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        position: static !important;
         user-select: text;
+    }
+
+    html {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        height: auto !important;
+    }
+
+    .gradient-bg {
+        position: fixed !important;
+        height: 100vh !important;
+        width: 100% !important;
     }
 
     /* Hide desktop-only elements on mobile */
@@ -74,7 +98,8 @@ body {
     .taskbar,
     .start-menu,
     .context-menu,
-    .calendar-widget {
+    .calendar-widget,
+    .screensaver {
         display: none !important;
     }
 
@@ -315,8 +340,10 @@ body {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
+    max-width: 100vw;
+    max-height: 100vh;
     background: radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.25) 0%, transparent 50%),
         radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.25) 0%, transparent 50%),
         radial-gradient(circle at 50% 20%, rgba(15, 52, 96, 0.4) 0%, transparent 50%);
@@ -394,8 +421,11 @@ body {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
+    max-width: 100vw;
+    max-height: 100vh;
+    overflow: hidden;
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
     display: flex;
     align-items: center;
@@ -513,11 +543,13 @@ body {
 .desktop {
     width: 100%;
     height: calc(100vh - 48px);
+    max-height: calc(100vh - 48px);
     padding: 20px;
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
     gap: 20px;
+    overflow: hidden;
 }
 
 .desktop-icon {
@@ -1460,7 +1492,7 @@ h4 {
     position: fixed;
     bottom: 58px;
     right: 10px;
-    width: 380px;
+    width: 650px;
     background: rgba(30, 30, 30, 0.95);
     backdrop-filter: blur(10px);
     border-radius: 12px;
@@ -1497,8 +1529,22 @@ h4 {
 .calendar-content {
     padding: 20px;
     display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
+
+.calendar-content-left {
+    flex: 1;
+    display: flex;
     flex-direction: column;
     gap: 15px;
+}
+
+.calendar-content-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .weather-section {
@@ -1566,6 +1612,78 @@ h4 {
     padding: 20px;
     color: rgba(255, 255, 255, 0.7);
     font-size: 14px;
+}
+
+/* Widget Calendar Styles */
+.widget-calendar-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.widget-cal-nav {
+    background: rgba(102, 126, 234, 0.2);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: all 0.3s ease;
+}
+
+.widget-cal-nav:hover {
+    background: rgba(102, 126, 234, 0.4);
+    transform: scale(1.05);
+}
+
+.widget-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+
+.widget-calendar-grid > div {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.widget-calendar-grid .widget-cal-day-name {
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 10px;
+    cursor: default;
+}
+
+.widget-calendar-grid .widget-cal-empty {
+    cursor: default;
+}
+
+.widget-calendar-grid .widget-cal-day {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.widget-calendar-grid .widget-cal-day:hover {
+    background: rgba(102, 126, 234, 0.3);
+    transform: scale(1.1);
+}
+
+.widget-calendar-grid .widget-cal-today {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-weight: 600;
+}
+
+.widget-calendar-grid .widget-cal-other-month {
+    color: rgba(255, 255, 255, 0.3);
 }
 
 .weather-error {
@@ -1643,7 +1761,7 @@ h4 {
     flex-direction: column;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     z-index: 2001;
-    max-height: 50vh;
+    max-height: 70vh;
     overflow: hidden;
 }
 
@@ -2444,5 +2562,66 @@ hr {
     to {
         opacity: 1;
     }
+}
+
+/* CALENDAR APP STYLES */
+.calendar-day {
+    padding: 8px;
+    text-align: center;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+    background: #f9f9f9;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.calendar-day:hover {
+    background: rgba(102, 126, 234, 0.1);
+    border-color: #667eea;
+    transform: scale(1.05);
+}
+
+.calendar-day.other-month {
+    color: #ccc;
+    background: transparent;
+}
+
+.calendar-day.today {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: 600;
+}
+
+.calendar-day.selected {
+    background: rgba(102, 126, 234, 0.2);
+    border-color: #667eea;
+    font-weight: 600;
+}
+
+/* SCREENSAVER STYLES */
+.screensaver {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+    z-index: 99999;
+    display: none;
+    cursor: none;
+    overflow: hidden;
+}
+
+.screensaver.active {
+    display: block;
+}
+
+.screensaver-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
 }
 
